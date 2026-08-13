@@ -87,7 +87,7 @@ export function ContactPage() {
                 <Icon icon="lucide:phone" className="w-5 h-5 text-accent" />
               </div>
               <h4 className="font-serif text-lg text-[#111111] mb-1">Phone</h4>
-              <p className="text-sm text-[#111111]/40">+91 XXXXX XXXXX</p>
+              <a href="tel:+916000244871" className="text-sm text-[#111111]/40 hover:text-accent transition-colors">+91 60002 44871</a>
             </Reveal>
             <Reveal className="reveal-delay-1 contact-info-card bg-warm border border-[#111111]/[0.07] rounded-xl p-6 text-center">
               <div className="w-11 h-11 rounded-full border border-accent/25 flex items-center justify-center mx-auto mb-4">

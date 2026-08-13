@@ -10,6 +10,8 @@ import { DonorsPage } from "@/pages/DonorsPage";
 import { CareersPage } from "@/pages/CareersPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { DonatePage } from "@/pages/DonatePage";
+import { TermsPage } from "@/pages/TermsPage";
+import { PrivacyPage } from "@/pages/PrivacyPage";
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/donate" element={<DonatePage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
