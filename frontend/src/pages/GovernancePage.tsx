@@ -3,7 +3,6 @@ import { Reveal } from "@/components/Reveal";
 import { Icon } from "@iconify/react";
 import generalSecretaryPankhiPriyaKalita from "@/assets/governance/general-secretary-pankhi-priya-kalita.webp";
 import programmeCoordinatorRimamoniDas from "@/assets/governance/programme-coordinator-rimamoni-das.webp";
-import socialMediaCoordinatorDebashreeKeot from "@/assets/governance/social-media-coordinator-debashree-keot.webp";
 import treasurerMarijaAfrin from "@/assets/governance/treasurer-marija-afrin.webp";
 import managingDirectorHemontaSaikia from "@/assets/governance/managing-director-hemonta-saikia.webp";
 import chairmanMoonBorah from "@/assets/governance/chairman-moon-borah.webp";
@@ -38,7 +37,6 @@ const trustees: Person[] = [
 const leadership: Person[] = [
   { role: "GENERAL SECRETARY", name: "Pankhi Priya Kalita", title: "General Secretary", desc: "Oversees administrative functions, coordination between departments, and ensures smooth execution of the Foundation's operations.", image: generalSecretaryPankhiPriyaKalita },
   // { role: "YOUTH & VOLUNTEER COORDINATOR", name: "Dipu Barmen", title: "Youth & Volunteer Coordinator", desc: "Manages volunteer recruitment, engagement, and coordination to ensure effective youth participation in all initiatives.", image: youthVolunteerCoordinatorDipuBarmen },
-  { role: "SOCIAL MEDIA COORDINATOR", name: "Debashree Keot", title: "Social Media Coordinator", desc: "Leads the Foundation's digital presence, content strategy, and online community engagement across all platforms.", image: socialMediaCoordinatorDebashreeKeot },
   // { role: "TRAINING COORDINATOR", name: "Biswajit Sutradhar", title: "Training Coordinator", desc: "Designs and delivers skill development workshops and training programs to empower community members with practical capabilities.", image: trainingCoordinatorBiswajitSutradhar },
   { role: "PROGRAMME COORDINATOR", name: "Rimamoni Das", title: "Programme Coordinator", desc: "Coordinates the planning, execution, and monitoring of all Foundation programs to ensure impactful and timely delivery.", image: programmeCoordinatorRimamoniDas },
   { role: "IT HEAD", name: "Bharat Dehingia", title: "IT Head", desc: "Manages the Foundation's technology infrastructure, digital tools, and IT systems to support seamless operations and growth." , image :baharath },
@@ -159,7 +157,7 @@ export function GovernancePage() {
             <div className="inline-flex items-center gap-3 bg-warm border border-[#111111]/[0.06] rounded-full px-6 py-3">
               <Icon icon="lucide:users" className="w-4 h-4 text-accent" />
               <span className="text-sm text-[#111111]/45">
-                <strong className="text-[#111111] font-medium">12</strong> members across governance &amp; leadership
+                <strong className="text-[#111111] font-medium">10</strong> members across governance &amp; leadership
               </span>
             </div>
           </Reveal>

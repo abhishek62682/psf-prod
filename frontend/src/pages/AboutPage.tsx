@@ -3,6 +3,9 @@ import { Reveal } from "@/components/Reveal";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { homeFaqItems } from "@/data/homeData";
 import { Icon } from "@iconify/react";
+import EYE_EVENT_IMG from "@/assets/about/eye-event.webp";
+import TREE_EVENT_IMG from "@/assets/about/tree-event.webp";
+import SKILL_EVENT_IMG from "@/assets/about/skill-event.webp";
 
 const initiatives = [
   { icon: "lucide:users", title: "Community Empowerment", desc: "Advancing education, skill development, and women's empowerment to help create stronger and more self-reliant communities." },
@@ -13,7 +16,7 @@ const initiatives = [
 
 const keyInitiatives = [
   {
-    icon: "lucide:stethoscope",
+    image: EYE_EVENT_IMG,
     title: "Free Healthcare Camps",
     paragraphs: [
       <>
@@ -25,7 +28,7 @@ const keyInitiatives = [
     ],
   },
   {
-    icon: "lucide:trees",
+    image: TREE_EVENT_IMG,
     title: "Environmental Conservation",
     paragraphs: [
       "To encourage a greener and healthier future, we regularly organize community cleanliness drives and environmental awareness activities.",
@@ -37,8 +40,8 @@ const keyInitiatives = [
     ],
   },
   {
-    icon: "lucide:recycle",
-    title: "Sustainability & Skill Development",
+    image: SKILL_EVENT_IMG,
+    title: "SKILL DEVELOPMENT",
     paragraphs: [
       "We regularly organize skill development workshops designed to encourage self-reliance and provide people with opportunities to develop practical skills.",
       <>
@@ -168,15 +171,15 @@ export function AboutPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {keyInitiatives.map((k, i) => (
-              <Reveal key={k.title} className={`bg-warm border border-[#111111]/[0.07] rounded-sm p-8 ${i > 0 ? `reveal-delay-${i}` : ""}`}>
-                <div className="w-12 h-12 rounded-full border border-accent/25 flex items-center justify-center mb-6">
-                  <Icon icon={k.icon} className="w-6 h-6 text-accent" />
-                </div>
-                <h3 className="font-serif text-2xl text-[#111111] mb-4">{k.title}</h3>
-                <div className="space-y-3 text-sm text-[#111111]/40 leading-relaxed">
-                  {k.paragraphs.map((p, j) => (
-                    <p key={j}>{p}</p>
-                  ))}
+              <Reveal key={k.title} className={`bg-warm border border-[#111111]/[0.07] rounded-sm overflow-hidden ${i > 0 ? `reveal-delay-${i}` : ""}`}>
+                <img src={k.image} alt={k.title} className="w-full h-[220px] object-cover" loading="lazy" />
+                <div className="p-8">
+                  <h3 className="font-serif text-2xl text-[#111111] mb-4">{k.title}</h3>
+                  <div className="space-y-3 text-sm text-[#111111]/40 leading-relaxed">
+                    {k.paragraphs.map((p, j) => (
+                      <p key={j}>{p}</p>
+                    ))}
+                  </div>
                 </div>
               </Reveal>
             ))}

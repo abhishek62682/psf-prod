@@ -12,8 +12,8 @@ import type { PublicDonation } from "@/config/api/donation.api";
 import { listCampaigns } from "@/config/api/campaign.api";
 import { getAssetUrl } from "@/Utils/constant";
 import { Icon } from "@iconify/react";
-import PROGRAM_IMG from "@/assets/home/program.webp"
 import VOLUNTEER from "@/assets/home/volunteer.webp"
+import PSF_OFFICE from "@/assets/home/psf-office.webp"
 const LOGO_SRC = "/images/logo.webp";
 
 const formatAmount = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -46,7 +46,7 @@ export function HomePage() {
         </div>
         <div className="max-w-container mx-auto px-6 text-center hero-content">
           <Reveal>
-            <p className="label-text text-accent mb-8">●&nbsp; TOGETHER, WE CREATE LASTING IMPACT</p>
+            <p className="label-text text-accent mb-8">●&nbsp; PROYAKH SOCIAL FOUNDATION</p>
           </Reveal>
           <Reveal as="h1" className="reveal-delay-1 font-serif text-[48px] md:text-[72px] lg:text-[88px] text-[#111111] leading-[1.05] tracking-tight">
             Creating Hope.
@@ -233,7 +233,7 @@ export function HomePage() {
           </div>
           <Reveal className="reveal-delay-2 max-w-3xl mx-auto relative">
             <Reveal img className="rounded-sm">
-              <img src={PROGRAM_IMG} alt="Community work" className="w-full h-[340px] md:h-[440px] object-cover" loading="lazy" />
+              <img src={PSF_OFFICE} alt="Proyakh Social Foundation office" className="w-full h-[340px] md:h-[440px] object-cover" loading="lazy" />
             </Reveal>
             <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-accent text-white px-6 py-4 rounded-sm transition-transform duration-500 ease-smooth hover:scale-[1.02]">
               <p className="font-serif text-xl leading-tight text-center">
