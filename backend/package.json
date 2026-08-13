@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon --env-file=.env.development server.js",
-    "start": "node --env-file=.env.production server.js",
+    "start": "node --env-file=.env.development server.js",
     "seed:admin": "node --env-file=.env.development scripts/seedAdmin.js",
     "seed:payment": "node --env-file=.env.development scripts/seedPaymentReceiving.js"
   },
