@@ -105,21 +105,6 @@ export function DonorsPage() {
           </Reveal>
 
           <div className="max-w-3xl mx-auto" ref={listRef}>
-            <Reveal className="reveal-delay-1 hidden md:grid grid-cols-12 gap-4 px-6 py-3 mb-2">
-              <div className="col-span-4">
-                <span className="label-text text-[#111111]/25 text-[10px]">SUPPORTER</span>
-              </div>
-              <div className="col-span-4">
-                <span className="label-text text-[#111111]/25 text-[10px]">CAMPAIGN</span>
-              </div>
-              <div className="col-span-2 text-right">
-                <span className="label-text text-[#111111]/25 text-[10px]">AMOUNT</span>
-              </div>
-              <div className="col-span-2 text-right">
-                <span className="label-text text-[#111111]/25 text-[10px]">DATE</span>
-              </div>
-            </Reveal>
-
             {loading ? (
               <div className="text-center py-20">
                 <Icon icon="lucide:loader-2" className="w-6 h-6 text-[#111111]/20 animate-spin inline-block" />
@@ -134,28 +119,47 @@ export function DonorsPage() {
                 <p className="text-sm text-[#111111]/30">No supporters found matching your search.</p>
               </div>
             ) : (
-              <div className="border-t border-[#111111]/[0.06]">
-                {donations.map((donor, i) => (
-                  <div
-                    key={`${donor.name}-${start + i}`}
-                    className="donor-row donor-fade-in grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center px-4 md:px-6 py-4 border-b border-[#111111]/[0.04] rounded-sm cursor-default"
-                    style={{ animationDelay: `${i * 0.03}s` }}
-                  >
-                    <div className="md:col-span-4 flex items-center gap-3">
-                      <div className={`avatar-circle w-9 h-9 rounded-full ${getAvatarColor(donor.name)} text-xs shrink-0`}>{getInitials(donor.name)}</div>
-                      <span className="text-sm font-medium text-[#111111] truncate">{donor.name}</span>
+              <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
+                <div className="min-w-[640px]">
+                  <div className="grid grid-cols-12 gap-4 px-4 md:px-6 py-3 mb-2">
+                    <div className="col-span-4">
+                      <span className="label-text text-[#111111]/25 text-[10px]">SUPPORTER</span>
                     </div>
-                    <div className="md:col-span-4 pl-12 md:pl-0">
-                      <span className="text-sm text-[#111111]/40 truncate block">{donor.campaign?.title ?? "General Donation"}</span>
+                    <div className="col-span-4">
+                      <span className="label-text text-[#111111]/25 text-[10px]">CAMPAIGN</span>
                     </div>
-                    <div className="md:col-span-2 text-left md:text-right">
-                      <span className="text-sm font-medium text-[#111111]">{formatCurrency(donor.amount)}</span>
+                    <div className="col-span-2 text-right">
+                      <span className="label-text text-[#111111]/25 text-[10px]">AMOUNT</span>
                     </div>
-                    <div className="md:col-span-2 text-left md:text-right">
-                      <span className="text-xs text-[#111111]/30">{formatDonorDate(donor.date)}</span>
+                    <div className="col-span-2 text-right">
+                      <span className="label-text text-[#111111]/25 text-[10px]">DATE</span>
                     </div>
                   </div>
-                ))}
+
+                  <div className="border-t border-[#111111]/[0.06]">
+                    {donations.map((donor, i) => (
+                      <div
+                        key={`${donor.name}-${start + i}`}
+                        className="donor-row donor-fade-in grid grid-cols-12 gap-4 items-center px-4 md:px-6 py-4 border-b border-[#111111]/[0.04] rounded-sm cursor-default"
+                        style={{ animationDelay: `${i * 0.03}s` }}
+                      >
+                        <div className="col-span-4 flex items-center gap-3">
+                          <div className={`avatar-circle w-9 h-9 rounded-full ${getAvatarColor(donor.name)} text-xs shrink-0`}>{getInitials(donor.name)}</div>
+                          <span className="text-sm font-medium text-[#111111] truncate">{donor.name}</span>
+                        </div>
+                        <div className="col-span-4">
+                          <span className="text-sm text-[#111111]/40 truncate block">{donor.campaign?.title ?? "General Donation"}</span>
+                        </div>
+                        <div className="col-span-2 text-right">
+                          <span className="text-sm font-medium text-[#111111]">{formatCurrency(donor.amount)}</span>
+                        </div>
+                        <div className="col-span-2 text-right">
+                          <span className="text-xs text-[#111111]/30">{formatDonorDate(donor.date)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
