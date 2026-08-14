@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import useSWR from "swr";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -8,6 +7,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Reveal } from "@/components/Reveal";
 import { useActiveSection } from "@/hooks/useActiveSection";
+import { useFetch } from "@/hooks/useFetch";
 import { Icon } from "@iconify/react";
 import { listEvents } from "@/config/api/event.api";
 import { getAssetUrl } from "@/Utils/constant";
@@ -124,7 +124,7 @@ function EventImageSliderInner({ list, alt }: { list: string[]; alt: string }) {
 }
 
 export function LatestEventsPage() {
-  const { data: events, isLoading: eventsLoading, error: eventsError } = useSWR("events", listEvents);
+  const { data: events, isLoading: eventsLoading, error: eventsError } = useFetch(listEvents, []);
   const eventList = events ?? [];
 
   // Unique categories in the order they first appear, used for the filter nav.

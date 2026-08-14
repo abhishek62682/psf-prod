@@ -1,7 +1,7 @@
-import useSWR from "swr";
 import { Link, useParams } from "react-router-dom";
 import { Reveal } from "@/components/Reveal";
 import { ProgressBar } from "@/components/ProgressBar";
+import { useFetch } from "@/hooks/useFetch";
 import { getCampaignById, getCampaignDonations } from "@/config/api/campaign.api";
 import { getAssetUrl } from "@/Utils/constant";
 import { formatCurrency, formatDonorDate, getInitials, getAvatarColor } from "@/data/donorsData";
@@ -9,10 +9,8 @@ import { formatCurrency, formatDonorDate, getInitials, getAvatarColor } from "@/
 export function CampaignDetailPage() {
   const { id } = useParams<{ id: string }>();
 
-  const { data: campaign, isLoading, error } = useSWR(id ? ["campaign", id] : null, () => getCampaignById(id!));
-  const { data: donationsData } = useSWR(id ? ["campaign-donations", id] : null, () =>
-    getCampaignDonations(id!, { limit: 10 })
-  );
+  const { data: campaign, isLoading, error } = useFetch(() => getCampaignById(id!), [id], !!id);
+  const { data: donationsData } = useFetch(() => getCampaignDonations(id!, { limit: 10 }), [id], !!id);
   const donations = donationsData?.donations ?? [];
 
   if (isLoading) {

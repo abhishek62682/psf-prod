@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import useSWR from "swr";
 import { Link } from "react-router-dom";
 import { Reveal } from "@/components/Reveal";
+import { useFetch } from "@/hooks/useFetch";
 import { formatCurrency, formatCurrencyShort, formatDonorDate, getInitials, getAvatarColor } from "@/data/donorsData";
 import { listDonations } from "@/config/api/donation.api";
 import { Icon } from "@iconify/react";
@@ -24,8 +24,9 @@ export function DonorsPage() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const { data, isLoading, error } = useSWR(["donations", page, search], () =>
-    listDonations({ page, limit: PER_PAGE, search: search || undefined })
+  const { data, isLoading, error } = useFetch(
+    () => listDonations({ page, limit: PER_PAGE, search: search || undefined }),
+    [page, search]
   );
 
   const donations = data?.donations ?? [];
