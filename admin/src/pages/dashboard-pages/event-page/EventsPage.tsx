@@ -82,6 +82,15 @@ const STATUS_STYLES: Record<EventStatus, string> = {
   inactive: "bg-slate-100 text-slate-600 border-slate-200",
 };
 
+const formatEventDuration = (event: Pick<Event, "eventStartDate" | "eventEndDate">) => {
+  const { eventStartDate, eventEndDate } = event;
+  if (!eventStartDate && !eventEndDate) return "—";
+  if (eventStartDate && eventEndDate && eventStartDate !== eventEndDate) {
+    return `${new Date(eventStartDate).toLocaleDateString()} – ${new Date(eventEndDate).toLocaleDateString()}`;
+  }
+  return new Date(eventStartDate ?? eventEndDate!).toLocaleDateString();
+};
+
 interface EventRowProps {
   event: Event;
   onEdit: () => void;
@@ -136,9 +145,7 @@ function EventRow({ event, onEdit, onDelete, onStatusChange }: EventRowProps) {
         <p className="text-sm text-slate-500 truncate">{event?.category || "—"}</p>
       </TableCell>
       <TableCell className="py-3">
-        <p className="text-sm text-slate-700">
-          {event?.eventDate ? new Date(event.eventDate).toLocaleDateString() : "—"}
-        </p>
+        <p className="text-sm text-slate-700">{formatEventDuration(event)}</p>
       </TableCell>
       <TableCell className="py-3">
         <Select
@@ -291,7 +298,7 @@ const EventsPage = () => {
               <TableHead className="text-xs font-semibold text-slate-600">Photos</TableHead>
               <TableHead className="text-xs font-semibold text-slate-600">Title</TableHead>
               <TableHead className="text-xs font-semibold text-slate-600">Category</TableHead>
-              <TableHead className="text-xs font-semibold text-slate-600">Event Date</TableHead>
+              <TableHead className="text-xs font-semibold text-slate-600">Duration</TableHead>
               <TableHead className="text-xs font-semibold text-slate-600">Status</TableHead>
               <TableHead className="text-xs font-semibold text-slate-600 text-right">Actions</TableHead>
             </TableRow>

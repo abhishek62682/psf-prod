@@ -74,7 +74,8 @@ const EditEventPage = () => {
               title: event?.title,
               category: event?.category,
               description: event?.description,
-              eventDate: event?.eventDate ? event.eventDate.slice(0, 10) : "",
+              eventStartDate: event?.eventStartDate ? event.eventStartDate.slice(0, 10) : "",
+              eventEndDate: event?.eventEndDate ? event.eventEndDate.slice(0, 10) : "",
             }}
             initialImages={event?.images}
             initialStats={event?.stats}

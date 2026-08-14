@@ -27,12 +27,18 @@ const EVENT_MIN_IMAGES = 1;
 const EVENT_MAX_IMAGES = 6;
 
 // Mirrors src/event/eventValidation.js on the backend.
-const eventSchema = z.object({
-  title: z.string().trim().min(1, { message: "Title is required." }),
-  category: z.string().trim().min(1, { message: "Category is required." }),
-  description: z.string().trim().min(1, { message: "Description is required." }),
-  eventDate: z.string().optional(),
-});
+const eventSchema = z
+  .object({
+    title: z.string().trim().min(1, { message: "Title is required." }),
+    category: z.string().trim().min(1, { message: "Category is required." }),
+    description: z.string().trim().min(1, { message: "Description is required." }),
+    eventStartDate: z.string().optional(),
+    eventEndDate: z.string().optional(),
+  })
+  .refine(
+    (data) => !data.eventStartDate || !data.eventEndDate || data.eventEndDate >= data.eventStartDate,
+    { message: "End date must be on or after the start date.", path: ["eventEndDate"] }
+  );
 
 export type EventFormValues = z.infer<typeof eventSchema>;
 
@@ -67,7 +73,8 @@ export function EventForm({
       title: "",
       category: "",
       description: "",
-      eventDate: "",
+      eventStartDate: "",
+      eventEndDate: "",
       ...defaultValues,
     },
   });
@@ -141,7 +148,8 @@ export function EventForm({
     const cleanActivities = activities.filter((a) => a.title?.trim() && a.description?.trim());
     onSubmit({
       ...values,
-      eventDate: values.eventDate || undefined,
+      eventStartDate: values.eventStartDate || undefined,
+      eventEndDate: values.eventEndDate || undefined,
       images,
       stats: cleanStats.length > 0 ? cleanStats : undefined,
       activities: cleanActivities.length > 0 ? cleanActivities : undefined,
@@ -198,19 +206,35 @@ export function EventForm({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="eventDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Event Date (optional)</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="eventStartDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Event Start Date (optional)</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="eventEndDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Event End Date (optional)</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div>
               <p className="text-sm font-medium mb-2">

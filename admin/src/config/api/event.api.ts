@@ -25,7 +25,8 @@ export interface Event {
   images: string[];
   stats?: EventStat[];
   activities?: EventActivity[];
-  eventDate?: string;
+  eventStartDate?: string;
+  eventEndDate?: string;
   status: EventStatus;
   order: number;
   createdAt: string;
@@ -45,7 +46,8 @@ export interface EventFormPayload {
   images: string[];
   stats?: EventStat[];
   activities?: EventActivity[];
-  eventDate?: string;
+  eventStartDate?: string;
+  eventEndDate?: string;
   status?: EventStatus;
 }
 
