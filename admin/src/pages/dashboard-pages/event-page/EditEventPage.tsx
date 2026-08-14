@@ -11,31 +11,31 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
 import { LoaderCircle } from "lucide-react";
-import { getCareerById, updateCareer } from "@/config/api/career.api";
-import type { CareerFormPayload } from "@/config/api/career.api";
-import { CareerForm } from "./CareerForm";
+import { getEventById, updateEvent } from "@/config/api/event.api";
+import type { EventFormPayload } from "@/config/api/event.api";
+import { EventForm } from "./EventForm";
 
-const EditCareerPage = () => {
+const EditEventPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: career, isLoading, isError } = useQuery({
-    queryKey: ["career", id],
-    queryFn: () => getCareerById(id!),
+  const { data: event, isLoading, isError } = useQuery({
+    queryKey: ["event", id],
+    queryFn: () => getEventById(id!),
     enabled: !!id,
   });
 
   const mutation = useMutation({
-    mutationFn: (payload: CareerFormPayload) => updateCareer(career!._id, payload),
+    mutationFn: (payload: EventFormPayload) => updateEvent(event?._id ?? "", payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-careers"] });
-      queryClient.invalidateQueries({ queryKey: ["career", id] });
-      toast.success("Career posting updated");
-      navigate("/dashboard/careers");
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+      queryClient.invalidateQueries({ queryKey: ["event", id] });
+      toast.success("Event updated");
+      navigate("/dashboard/events");
     },
     onError: (error: AxiosError<{ message: string }>) => {
-      toast.error("Failed to update posting", {
+      toast.error("Failed to update event", {
         description: error.response?.data?.message ?? "Something went wrong. Please try again.",
       });
     },
@@ -46,7 +46,7 @@ const EditCareerPage = () => {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/dashboard/careers">Careers</BreadcrumbLink>
+            <BreadcrumbLink href="/dashboard/events">Events</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -58,28 +58,27 @@ const EditCareerPage = () => {
       <div className="mt-6 max-w-3xl">
         {isLoading && (
           <div className="flex items-center justify-center py-24 text-sm text-muted-foreground gap-2">
-            <LoaderCircle className="animate-spin h-4 w-4" /> Loading posting...
+            <LoaderCircle className="animate-spin h-4 w-4" /> Loading event...
           </div>
         )}
 
         {isError && (
           <p className="py-24 text-center text-sm text-red-500">
-            Couldn't load this posting. It may have been deleted.
+            Couldn't load this event. It may have been deleted.
           </p>
         )}
 
-        {career && (
-          <CareerForm
+        {event && (
+          <EventForm
             defaultValues={{
-              title: career.title,
-              employmentType: career.employmentType,
-              workMode: career.workMode,
-              location: career.location,
-              description: career.description,
-              experience: career.experience,
-              qualification: career.qualification,
-              status: career.status,
+              title: event?.title,
+              category: event?.category,
+              description: event?.description,
+              eventDate: event?.eventDate ? event.eventDate.slice(0, 10) : "",
             }}
+            initialImages={event?.images}
+            initialStats={event?.stats}
+            initialActivities={event?.activities}
             onSubmit={(payload) => mutation.mutate(payload)}
             isSubmitting={mutation.isPending}
             submitLabel="Save Changes"
@@ -90,4 +89,4 @@ const EditCareerPage = () => {
   );
 };
 
-export default EditCareerPage;
+export default EditEventPage;

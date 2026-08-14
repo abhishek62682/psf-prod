@@ -1,143 +1,23 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import useSWR from "swr";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import { Reveal } from "@/components/Reveal";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { Icon } from "@iconify/react";
-import nutritionImage from "@/assets/our-work/nutrition-community-meal.webp";
-import floodImage from "@/assets/our-work/flood.jpeg"
-import eyeCampImage from "@/assets/our-work/eyecamp.webp"
-import envDayImage from "@/assets/our-work/envday-01.webp"
+import { listEvents } from "@/config/api/event.api";
+import { getAssetUrl } from "@/Utils/constant";
 
-interface Activity {
-  icon: string;
-  title: string;
-  desc: string;
-}
-
-interface WorkSection {
-  id: string;
-  icon: string;
-  label: string;
-  title: React.ReactNode;
-  body: string;
-  image: string;
-  imageAlt: string;
-  activities: Activity[];
-  stats: { value: string; label: string }[];
-  bg: string;
-  imageFirst: boolean;
-}
-
-const sections: WorkSection[] = [
-  {
-    id: "environment",
-    icon: "lucide:leaf",
-    label: "ENVIRONMENT & SUSTAINABILITY",
-    title: "Protecting Our Planet, Together",
-    body: "We run tree plantation drives, clean-up campaigns, and awareness programs to protect the environment and build climate-resilient communities. Our environmental initiatives focus on sustainable practices that safeguard the ecosystems our communities depend on.",
-    image: envDayImage,
-    imageAlt: "Environment Day tree plantation drive",
-    activities: [
-      { icon: "lucide:trees", title: "Tree Plantation Drives", desc: "Organizing community plantation events to restore green cover." },
-      { icon: "lucide:recycle", title: "Clean-Up Campaigns", desc: "Mobilizing volunteers to clear waste from public spaces and water bodies." },
-      { icon: "lucide:megaphone", title: "Environmental Awareness", desc: "Educating communities on sustainable living and climate action." },
-    ],
-    stats: [
-      { value: "1000+", label: "Trees Planted" },
-      { value: "10+", label: "Clean-Up Drives" },
-      { value: "5+", label: "Communities Engaged" },
-    ],
-    bg: "bg-warm-alt",
-    imageFirst: true,
-  },
-  {
-    id: "nutrition",
-    icon: "lucide:apple",
-    label: "NUTRITION & FOOD SUPPORT",
-    title: (
-      <>
-        Nourishing Communities,
-        <br />
-        One Meal at a Time
-      </>
-    ),
-    body: "Nutritious meals and food packages help children and families stay healthy and energized. Our nutrition programs target malnutrition in rural areas and ensure that no one in our communities goes hungry.",
-    image: nutritionImage,
-    imageAlt: "Nutrition program",
-    activities: [
-      { icon: "lucide:utensils", title: "Community Meal Programs", desc: "Organizing regular meal distribution drives for families in need." },
-      { icon: "lucide:megaphone", title: "Nutrition Awareness Drives", desc: "Educating families about balanced diets and local nutritional resources." },
-      { icon: "lucide:salad", title: "Midday Meal Support", desc: "Supplementing government midday meal programs in underserved schools." },
-    ],
-    stats: [
-      { value: "300+", label: "Meals Served" },
-      { value: "5+", label: "Communities Reached" },
-      { value: "4+", label: "Drives Conducted" },
-    ],
-    bg: "bg-warm",
-    imageFirst: false,
-  },
-  {
-    id: "healthcare",
-    icon: "lucide:stethoscope",
-    label: "HEALTHCARE & WELLNESS",
-    title: (
-      <>
-        Bringing Healthcare
-        <br />
-        to Doorsteps
-      </>
-    ),
-    body: "Mobile clinics, health camps, and medical support reach families in remote villages. We partner with healthcare institutions to ensure that quality medical attention is accessible to those who need it most.",
-    image: eyeCampImage,
-    imageAlt: "Healthcare camp",
-    activities: [
-      { icon: "lucide:heart-pulse", title: "Health Camps and Screenings", desc: "Free eye check-ups, kidney screenings, and general health consultations." },
-      { icon: "lucide:pill", title: "Medicines and Referrals", desc: "Distributing essential medicines and connecting patients to specialized care." },
-      { icon: "lucide:shield-plus", title: "Awareness on Hygiene", desc: "Educating communities on sanitation, clean water, and preventive health practices." },
-    ],
-    stats: [
-      { value: "400+", label: "Patients Screened" },
-      { value: "6+", label: "Health Camps" },
-      { value: "2+", label: "Hospital Partners" },
-    ],
-    bg: "bg-warm-alt",
-    imageFirst: true,
-  },
-  {
-    id: "disaster",
-    icon: "lucide:shield-alert",
-    label: "DISASTER RESPONSE",
-    title: (
-      <>
-        Standing With Communities
-        <br />
-        In Their Darkest Hours
-      </>
-    ),
-    body: "Rapid relief for flood-affected communities and long-term rehabilitation support. When disaster strikes, our team mobilizes quickly to provide essential supplies, shelter, and assistance to help families rebuild their lives.",
-    image: floodImage,
-    imageAlt: "Disaster relief",
-    activities: [
-      { icon: "lucide:package-check", title: "Emergency Relief Kits", desc: "Distributing food, water, clothing, and essential supplies to affected families." },
-      { icon: "lucide:tent", title: "Temporary Shelter Support", desc: "Helping displaced families find safe temporary shelter and basic amenities." },
-      { icon: "lucide:hammer", title: "Community Rebuilding", desc: "Long-term support to help communities recover, rebuild, and become more resilient." },
-    ],
-    stats: [
-      { value: "200+", label: "Families Assisted" },
-      { value: "3+", label: "Relief Operations" },
-      { value: "₹1.35L+", label: "Relief Distributed" },
-    ],
-    bg: "bg-warm",
-    imageFirst: false,
-  },
-];
-
-const navLabels: Record<string, string> = {
-  environment: "Environment",
-  nutrition: "Nutrition",
-  healthcare: "Healthcare",
-  disaster: "Disaster Response",
-};
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
 function StatRow({ stats }: { stats: { value: string; label: string }[];  }) {
   return (
@@ -155,8 +35,88 @@ function StatRow({ stats }: { stats: { value: string; label: string }[];  }) {
   );
 }
 
+function EventImageSlider({ images, alt }: { images?: string[]; alt: string }) {
+  const list = images ?? [];
+
+  if (list.length === 0) {
+    return <div className="w-full h-[320px] md:h-[500px] rounded-2xl bg-[#111111]/[0.04]" />;
+  }
+
+  if (list.length === 1) {
+    return (
+      <img
+        src={getAssetUrl(list[0])}
+        alt={alt}
+        className="w-full h-[320px] md:h-[500px] object-cover rounded-2xl"
+        loading="lazy"
+      />
+    );
+  }
+
+  return <EventImageSliderInner list={list} alt={alt} />;
+}
+
+function EventImageSliderInner({ list, alt }: { list: string[]; alt: string }) {
+  // Explicit nav elements (instead of the `navigation` boolean shorthand) so
+  // each slider's prev/next buttons are wired unambiguously to *this*
+  // Swiper instance, never a sibling event's slider on the same page.
+  const [prevEl, setPrevEl] = useState<HTMLButtonElement | null>(null);
+  const [nextEl, setNextEl] = useState<HTMLButtonElement | null>(null);
+
+  return (
+    <div className="relative group/slider w-full h-[320px] md:h-[500px] rounded-2xl overflow-hidden">
+      <Swiper
+        modules={[Navigation, Pagination, Autoplay]}
+        navigation={{ prevEl, nextEl }}
+        pagination={{ clickable: true }}
+        autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+        loop
+        className="event-swiper w-full h-full"
+      >
+        {list.map((url) => (
+          <SwiperSlide key={url}>
+            <img src={getAssetUrl(url)} alt={alt} className="w-full h-full object-cover" loading="lazy" />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      <button
+        ref={setPrevEl}
+        type="button"
+        aria-label="Previous photo"
+        className="event-slider-nav-btn left-3"
+      >
+        <Icon icon="lucide:chevron-left" className="w-5 h-5" />
+      </button>
+      <button
+        ref={setNextEl}
+        type="button"
+        aria-label="Next photo"
+        className="event-slider-nav-btn right-3"
+      >
+        <Icon icon="lucide:chevron-right" className="w-5 h-5" />
+      </button>
+    </div>
+  );
+}
+
 export function OurWorkPage() {
-  const active = useActiveSection(sections.map((s) => s.id));
+  const { data: events, isLoading: eventsLoading, error: eventsError } = useSWR("events", listEvents);
+  const eventList = events ?? [];
+
+  // Unique categories in the order they first appear, used for the filter nav.
+  // Each category anchors to the first event of that category below.
+  const categories: string[] = [];
+  const categoryFirstIndex: Record<string, number> = {};
+  eventList.forEach((e, i) => {
+    if (!e.category) return;
+    if (!(e.category in categoryFirstIndex)) {
+      categoryFirstIndex[e.category] = i;
+      categories.push(e.category);
+    }
+  });
+
+  const active = useActiveSection(categories.map((c) => slugify(c)));
 
   return (
     <>
@@ -177,79 +137,109 @@ export function OurWorkPage() {
         </div>
       </section>
 
-      <section className="bg-warm-alt py-8 border-t border-[#111111]/[0.04] sticky top-16 z-40">
-        <div className="max-w-container mx-auto px-6">
-          <div className="flex items-center justify-center gap-6 md:gap-10 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {sections.map((s) => (
-              <a
-                key={s.id}
-                href={`#${s.id}`}
-                className={`work-nav-link text-sm font-medium whitespace-nowrap py-2 ${active === s.id ? "active text-[#111111]" : "text-[#111111]/40"}`}
-              >
-                {navLabels[s.id]}
-              </a>
-            ))}
+      {categories.length > 0 && (
+        <section className="bg-warm-alt py-8 border-t border-[#111111]/[0.04] sticky top-16 z-40">
+          <div className="max-w-container mx-auto px-6">
+            <div className="flex items-center justify-center gap-6 md:gap-10 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {categories.map((c) => {
+                const id = slugify(c);
+                return (
+                  <a
+                    key={c}
+                    href={`#${id}`}
+                    className={`work-nav-link text-sm font-medium whitespace-nowrap py-2 ${active === id ? "active text-[#111111]" : "text-[#111111]/40"}`}
+                  >
+                    {c}
+                  </a>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {sections.map((s, si) => (
-        <div key={s.id}>
-          <section id={s.id} className={`${s.bg} pt-28 md:pt-36 pb-16 ${si > 0 ? "border-t border-[#111111]/[0.04]" : ""}`}>
-            <div className="max-w-container mx-auto px-6">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-                {s.imageFirst && (
-                  <div className="lg:col-span-6 lg:sticky lg:top-40">
-                    <Reveal img className="rounded-2xl">
-                      <img src={s.image} alt={s.imageAlt} className="w-full h-[320px] md:h-[500px] w-full object-cover rounded-2xl" loading="lazy" />
-                    </Reveal>
-                  </div>
-                )}
-                <div className={`lg:col-span-6 ${!s.imageFirst ? "order-2 lg:order-1" : ""}`}>
-                  <Reveal className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-full border border-accent/25 flex items-center justify-center shrink-0">
-                      <Icon icon={s.icon} className="w-5 h-5 text-accent" />
+      {eventsLoading && (
+        <section className="bg-warm py-28">
+          <p className="text-center text-sm text-[#111111]/30">Loading events…</p>
+        </section>
+      )}
+      {eventsError && (
+        <section className="bg-warm py-28">
+          <p className="text-center text-sm text-accent">Couldn't load events right now. Please try again later.</p>
+        </section>
+      )}
+      {!eventsLoading && !eventsError && eventList.length === 0 && (
+        <section className="bg-warm py-28">
+          <p className="text-center text-sm text-[#111111]/30">No events yet — check back soon.</p>
+        </section>
+      )}
+
+      {eventList.map((e, i) => {
+        const imageFirst = i % 2 === 0;
+        const bg = i % 2 === 0 ? "bg-warm-alt" : "bg-warm";
+        const isFirstInCategory = e.category ? categoryFirstIndex[e.category] === i : false;
+        const sectionId = isFirstInCategory ? slugify(e.category) : undefined;
+        return (
+          <div key={e._id}>
+            <section id={sectionId} className={`${bg} pt-28 md:pt-36 pb-16 ${i > 0 ? "border-t border-[#111111]/[0.04]" : ""}`}>
+              <div className="max-w-container mx-auto px-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                  {imageFirst && (
+                    <div className="lg:col-span-6 lg:sticky lg:top-40">
+                      <Reveal img className="rounded-2xl">
+                        <EventImageSlider images={e.images} alt={e.title} />
+                      </Reveal>
                     </div>
-                    <p className="label-text text-accent">{s.label}</p>
-                  </Reveal>
-                  <Reveal as="h2" className="reveal-delay-1 font-serif text-[36px] md:text-[44px] lg:text-[52px] text-[#111111] leading-[1.1] tracking-tight mb-6">
-                    {s.title}
-                  </Reveal>
-                  <Reveal as="p" className="reveal-delay-2 text-base text-[#111111]/50 leading-relaxed mb-10">
-                    {s.body}
-                  </Reveal>
-                  <Reveal className="reveal-delay-3 space-y-0">
-                    <p className="label-text text-[#111111]/25 mb-4">KEY ACTIVITIES</p>
-                    {s.activities.map((a) => (
-                      <div key={a.title} className="activity-item flex items-center gap-4 py-4 border-t border-[#111111]/[0.05] rounded-lg px-3">
-                        <span className="w-8 h-8 rounded-lg bg-accent/8 flex items-center justify-center shrink-0">
-                          <Icon icon={a.icon} className="w-4 h-4 text-accent" />
-                        </span>
-                        <div>
-                          <h4 className="text-sm font-medium text-[#111111]">{a.title}</h4>
-                          <p className="text-xs text-[#111111]/35 mt-0.5">{a.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </Reveal>
-                </div>
-                {!s.imageFirst && (
-                  <div className="lg:col-span-6 order-1 lg:order-2 lg:sticky lg:top-40">
-                    <Reveal img className="rounded-2xl">
-                      <img src={s.image} alt={s.imageAlt} className="w-full h-[320px] md:h-[420px] object-cover rounded-2xl" loading="lazy" />
+                  )}
+                  <div className={`lg:col-span-6 ${!imageFirst ? "order-2 lg:order-1" : ""}`}>
+                    {e.category && (
+                      <Reveal className="mb-6">
+                        <p className="label-text text-accent">{e.category.toUpperCase()}</p>
+                      </Reveal>
+                    )}
+                    <Reveal as="h2" className="reveal-delay-1 font-serif text-[36px] md:text-[44px] lg:text-[52px] text-[#111111] leading-[1.1] tracking-tight mb-6">
+                      {e.title}
                     </Reveal>
+                    <Reveal as="p" className="reveal-delay-2 text-base text-[#111111]/50 leading-relaxed mb-10">
+                      {e.description}
+                    </Reveal>
+                    {e.activities && e.activities.length > 0 && (
+                      <Reveal className="reveal-delay-3 space-y-0">
+                        <p className="label-text text-[#111111]/25 mb-4">KEY ACTIVITIES</p>
+                        {e.activities.map((a) => (
+                          <div key={a.title} className="activity-item flex items-center gap-4 py-4 border-t border-[#111111]/[0.05] rounded-lg px-3">
+                            <span className="w-8 h-8 rounded-lg bg-accent/8 flex items-center justify-center shrink-0">
+                              <Icon icon="lucide:check-circle-2" className="w-4 h-4 text-accent" />
+                            </span>
+                            <div>
+                              <h4 className="text-sm font-medium text-[#111111]">{a.title}</h4>
+                              <p className="text-xs text-[#111111]/35 mt-0.5">{a.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </Reveal>
+                    )}
                   </div>
-                )}
+                  {!imageFirst && (
+                    <div className="lg:col-span-6 order-1 lg:order-2 lg:sticky lg:top-40">
+                      <Reveal img className="rounded-2xl">
+                        <EventImageSlider images={e.images} alt={e.title} />
+                      </Reveal>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </section>
-          <section className={`${s.bg} pb-24 md:pb-32`}>
-            <div className="max-w-container mx-auto px-6">
-              <StatRow stats={s.stats}  />
-            </div>
-          </section>
-        </div>
-      ))}
+            </section>
+            {e.stats && e.stats.length > 0 && (
+              <section className={`${bg} pb-24 md:pb-32`}>
+                <div className="max-w-container mx-auto px-6">
+                  <StatRow stats={e.stats} />
+                </div>
+              </section>
+            )}
+          </div>
+        );
+      })}
 
       {/* ===== OVERALL IMPACT ===== */}
       <section className="bg-warm-alt py-28 md:py-36 border-t border-[#111111]/[0.04]">

@@ -10,7 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, User, Megaphone, HandCoins, Landmark, Mail, Briefcase, History } from "lucide-react"
+import { LayoutDashboard, User, Megaphone, HandCoins, Landmark, Mail, CalendarDays } from "lucide-react"
 
 import { ROLE_GROUPS } from "@/config/roles";
 
@@ -21,9 +21,8 @@ const data = {
     { title: "Campaigns",          url: "/dashboard/campaigns",         icon: Megaphone,       roles: ROLE_GROUPS.ALL },
     { title: "Donations",          url: "/dashboard/donations",         icon: HandCoins,       roles: ROLE_GROUPS.ALL },
     { title: "Payment Accounts",   url: "/dashboard/payment-receiving", icon: Landmark,        roles: ROLE_GROUPS.ALL },
-    { title: "Audit Logs",         url: "/dashboard/audit-logs",        icon: History,         roles: ROLE_GROUPS.ALL },
     { title: "Messages",           url: "/dashboard/contact",           icon: Mail,            roles: ROLE_GROUPS.ALL },
-    { title: "Careers",            url: "/dashboard/careers",           icon: Briefcase,       roles: ROLE_GROUPS.ALL },
+    { title: "Events",             url: "/dashboard/events",            icon: CalendarDays,    roles: ROLE_GROUPS.ALL },
     { title: "Profile",            url: "/dashboard/profile",           icon: User,            roles: ROLE_GROUPS.ALL },
   ],
 };

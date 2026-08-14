@@ -1,214 +1,68 @@
-import { useEffect, useRef, useState } from 'react';
-import type { ChangeEvent } from 'react';
+import { useState } from 'react';
 import {
     Breadcrumb,
     BreadcrumbItem,
     BreadcrumbList,
     BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from '@/components/ui/form';
-import {
-    getDefaultPaymentAccount,
-    createPaymentAccount,
-    updatePaymentAccount,
-    removeQrCode,
-} from '@/config/api/paymentReceiving.api';
-import type { PaymentReceivingPayload } from '@/config/api/paymentReceiving.api';
-import { uploadImage } from '@/config/api/upload.api';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { getDefaultPaymentAccount } from '@/config/api/paymentReceiving.api';
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import axios from 'axios';
-import type { AxiosError } from 'axios';
-import { LoaderCircle, ImagePlus, Trash2 } from 'lucide-react';
+import { LoaderCircle, ImageOff, Copy, Check, Landmark, QrCode, Wallet } from 'lucide-react';
 import { getAssetUrl } from '@/Utils/constant';
 
-// Mirrors src/paymentReceiving/paymentReceivingValidation.js on the backend.
-const paymentReceivingSchema = z
-    .object({
-        accountName: z.string().trim().min(1, { message: 'Account name is required.' }),
-        upiId: z.string().trim().optional(),
-        bankName: z.string().trim().optional(),
-        accountNumber: z.string().trim().optional(),
-        ifscCode: z.string().trim().optional(),
-        branch: z.string().trim().optional(),
-        qrCode: z.string().trim().optional(),
-        isDefault: z.boolean(),
-    })
-    .refine((d) => !!(d.upiId || d.accountNumber || d.qrCode), {
-        message: 'Provide at least one payment method: UPI ID, bank account number, or QR code.',
-        path: ['upiId'],
-    });
+// Read-only by design: these details are fixed and can only be changed by
+// re-running backend/scripts/seedPaymentReceiving.js on the server, so
+// nobody can tamper with the NGO's bank/UPI details through the app.
 
-type PaymentReceivingFormValues = z.infer<typeof paymentReceivingSchema>;
+const CopyableField = ({ label, value }: { label: string; value?: string | null }) => {
+    const [copied, setCopied] = useState(false);
 
-const emptyDefaults: PaymentReceivingFormValues = {
-    accountName: '',
-    upiId: '',
-    bankName: '',
-    accountNumber: '',
-    ifscCode: '',
-    branch: '',
-    qrCode: '',
-    isDefault: true,
+    const handleCopy = () => {
+        if (!value) return;
+        navigator.clipboard.writeText(value);
+        setCopied(true);
+        toast.success(`${label} copied`);
+        setTimeout(() => setCopied(false), 1500);
+    };
+
+    return (
+        <div>
+            <p className="text-xs font-medium text-muted-foreground mb-1">{label}</p>
+            {value ? (
+                <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="group flex w-full items-center justify-between gap-2 rounded-lg border bg-muted/30 px-3 py-2.5 text-left hover:bg-muted/60 transition-colors"
+                >
+                    <span className="text-sm font-medium truncate">{value}</span>
+                    {copied ? (
+                        <Check className="h-3.5 w-3.5 shrink-0 text-green-600" />
+                    ) : (
+                        <Copy className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:text-foreground" />
+                    )}
+                </button>
+            ) : (
+                <p className="text-sm text-muted-foreground rounded-lg border border-dashed px-3 py-2.5">Not set</p>
+            )}
+        </div>
+    );
 };
 
 const PaymentReceivingPage = () => {
-    const queryClient = useQueryClient();
-    const qrInputRef = useRef<HTMLInputElement | null>(null);
-    const [removeQrDialogOpen, setRemoveQrDialogOpen] = useState(false);
-
     const { data: account, isLoading, error } = useQuery({
         queryKey: ['payment-receiving'],
         queryFn: getDefaultPaymentAccount,
         retry: false,
     });
 
-    // Only "no account configured yet" (404) should fall through to the
-    // create form — any other failure (network, 500) is a real error.
     const isNotConfigured = axios.isAxiosError(error) && error.response?.status === 404;
     const isRealError = !!error && !isNotConfigured;
 
-    const form = useForm<PaymentReceivingFormValues>({
-        resolver: zodResolver(paymentReceivingSchema),
-        defaultValues: emptyDefaults,
-    });
-
-    useEffect(() => {
-        if (!account) return;
-        form.reset({
-            accountName: account.accountName ?? '',
-            upiId: account.upiId ?? '',
-            bankName: account.bankName ?? '',
-            accountNumber: account.accountNumber ?? '',
-            ifscCode: account.ifscCode ?? '',
-            branch: account.branch ?? '',
-            qrCode: account.qrCode ?? '',
-            isDefault: account.isDefault ?? true,
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [account?._id]);
-
-    // Two-step QR code flow: step 1 uploads the image and stores the
-    // returned URL on the form (this mutation); step 2 is the form's own
-    // "Save Changes" submit, which persists that URL onto the account via
-    // create/updatePaymentAccount. Selecting a new image does NOT save by
-    // itself — you still have to hit Save Changes.
-    const qrCodeMutation = useMutation({
-        mutationFn: (file: File) => uploadImage(file, 'qrcode'),
-        onSuccess: (data) => {
-            form.setValue('qrCode', data.url, { shouldDirty: true, shouldValidate: true });
-            toast.success('QR code uploaded', { description: 'Click "Save Changes" to apply it.' });
-        },
-        onError: (err: AxiosError<{ message: string }>) => {
-            toast.error('QR code upload failed', {
-                description: err.response?.data?.message ?? 'Something went wrong.',
-            });
-        },
-    });
-
-    const handleQrCodeChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) qrCodeMutation.mutate(file);
-        if (qrInputRef.current) qrInputRef.current.value = '';
-    };
-
-    const removeQrMutation = useMutation({
-        mutationFn: () => removeQrCode(account!._id),
-        onSuccess: (updated) => {
-            queryClient.setQueryData(['payment-receiving'], updated);
-            form.setValue('qrCode', '', { shouldDirty: true });
-            setRemoveQrDialogOpen(false);
-            toast.success('QR code removed', {
-                description: 'It no longer appears on the public donate page.',
-            });
-        },
-        onError: (err: AxiosError<{ message: string }>) => {
-            setRemoveQrDialogOpen(false);
-            toast.error('Failed to remove QR code', {
-                description: err.response?.data?.message ?? 'Something went wrong.',
-            });
-        },
-    });
-
-    const handleRemoveQrCode = () => {
-        if (account?.qrCode && account.qrCode === form.getValues('qrCode')) {
-            setRemoveQrDialogOpen(true);
-        } else {
-            // Not yet persisted — just uploaded locally, nothing to delete server-side.
-            form.setValue('qrCode', '', { shouldDirty: true, shouldValidate: true });
-        }
-    };
-
-    const buildPayload = (values: PaymentReceivingFormValues): PaymentReceivingPayload => ({
-        accountName: values.accountName,
-        upiId: values.upiId || undefined,
-        bankName: values.bankName || undefined,
-        accountNumber: values.accountNumber || undefined,
-        ifscCode: values.ifscCode || undefined,
-        branch: values.branch || undefined,
-        qrCode: values.qrCode || undefined,
-        isDefault: values.isDefault,
-    });
-
-    const mutation = useMutation({
-        mutationFn: (values: PaymentReceivingFormValues) =>
-            account
-                ? updatePaymentAccount(account._id, buildPayload(values))
-                : createPaymentAccount(buildPayload(values)),
-        onSuccess: (updated) => {
-            queryClient.setQueryData(['payment-receiving'], updated);
-            toast.success(account ? 'Payment details updated' : 'Payment details saved', {
-                description: 'Campaigns will use this account to receive donations.',
-            });
-        },
-        onError: (err: AxiosError<{ message: string }>) => {
-            toast.error('Failed to save payment details', {
-                description: err.response?.data?.message ?? 'Something went wrong. Please try again.',
-            });
-        },
-    });
-
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center py-24 text-muted-foreground text-sm gap-2">
-                <LoaderCircle className="animate-spin h-4 w-4" />
-                Loading payment details...
-            </div>
-        );
-    }
-
     if (isRealError) {
-        return (
-            <p className="py-24 text-center text-sm text-red-500">
-                Couldn't load payment receiving details. Check your connection and try again.
-            </p>
-        );
+        toast.error("Couldn't load payment receiving details.");
     }
-
-    const qrCodeValue = form.watch('qrCode');
 
     return (
         <div>
@@ -220,223 +74,97 @@ const PaymentReceivingPage = () => {
                 </BreadcrumbList>
             </Breadcrumb>
 
-            <div className="mt-6 max-w-3xl space-y-4">
+            <div className="mt-6 w-full max-w-5xl space-y-4">
                 <div>
                     <h1 className="text-xl font-bold">Payment Accounts</h1>
                     <p className="text-sm text-muted-foreground">
-                        The QR code, UPI ID, and bank details donors see when contributing. Every campaign
-                        currently shares this one default account.
+                        Fixed payment details shown to donors.
                     </p>
                 </div>
 
-                {isNotConfigured && (
-                    <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-                        No payment receiving account has been configured yet. Fill in the details below and
-                        save — campaigns can't be created until one exists.
+                {isLoading && (
+                    <div className="flex items-center justify-center py-24 text-muted-foreground text-sm gap-2">
+                        <LoaderCircle className="animate-spin h-4 w-4" />
+                        Loading payment details...
+                    </div>
+                )}
+
+                {isRealError && (
+                    <p className="py-12 text-center text-sm text-red-500">
+                        Couldn't load payment receiving details. Check your connection and try again.
                     </p>
                 )}
 
-                <div className="rounded-xl border bg-card">
-                    <div className="px-6 py-5">
-                        <h2 className="text-sm font-semibold">Account Details</h2>
-                    </div>
+                {isNotConfigured && (
+                    <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                        No payment receiving account has been configured yet. Set the PAYMENT_* variables in
+                        the backend's .env and run <code>npm run seed:payment</code> to create one — campaigns
+                        can't be created until one exists.
+                    </p>
+                )}
 
-                    <Separator />
+                {account && (
+                    <div className="rounded-2xl border bg-card overflow-hidden">
+                        <div className="px-6 py-5 border-b bg-muted/20">
+                            <h2 className="text-sm font-semibold">{account?.accountName}</h2>
+                            <p className="text-xs text-muted-foreground mt-0.5">Default receiving account</p>
+                        </div>
 
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
-                            <div className="px-6 py-6 space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="accountName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Account Name</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="NGO Main Account" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="upiId"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>UPI ID</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="ngo@upi" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                {/* QR code — two-step: upload now (stores the URL on the form),
-                                    then "Save Changes" below actually persists it to the account. */}
-                                <div>
-                                    <p className="text-sm font-medium mb-2">QR Code</p>
-                                    <div className="flex items-center gap-4">
-                                        {qrCodeValue ? (
-                                            <img
-                                                src={getAssetUrl(qrCodeValue)}
-                                                alt="Payment QR code"
-                                                className="h-20 w-20 rounded-md object-cover border"
-                                            />
-                                        ) : (
-                                            <div className="h-20 w-20 rounded-md border border-dashed flex items-center justify-center text-muted-foreground">
-                                                <ImagePlus className="h-5 w-5" />
-                                            </div>
-                                        )}
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    disabled={qrCodeMutation.isPending}
-                                                    onClick={() => qrInputRef.current?.click()}
-                                                >
-                                                    {qrCodeMutation.isPending && (
-                                                        <LoaderCircle className="animate-spin mr-2 h-3.5 w-3.5" />
-                                                    )}
-                                                    {qrCodeValue ? 'Replace' : 'Upload'}
-                                                </Button>
-                                                {qrCodeValue && (
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="text-red-600 border-red-200 hover:bg-red-50"
-                                                        disabled={removeQrMutation.isPending}
-                                                        onClick={handleRemoveQrCode}
-                                                    >
-                                                        {removeQrMutation.isPending ? (
-                                                            <LoaderCircle className="animate-spin mr-2 h-3.5 w-3.5" />
-                                                        ) : (
-                                                            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                                                        )}
-                                                        Remove
-                                                    </Button>
-                                                )}
-                                            </div>
-                                            <span className="text-xs text-muted-foreground">
-                                                JPG, PNG, WEBP · Max 5MB
-                                            </span>
-                                        </div>
-                                        <input
-                                            ref={qrInputRef}
-                                            type="file"
-                                            accept="image/jpeg,image/jpg,image/png,image/webp"
-                                            className="hidden"
-                                            onChange={handleQrCodeChange}
+                        <div className="grid grid-cols-1 md:grid-cols-2">
+                            {/* Left: QR code */}
+                            <div className="flex flex-col items-center justify-center gap-4 px-6 py-10 md:border-r">
+                                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                                    <QrCode className="h-3.5 w-3.5" />
+                                    SCAN TO PAY
+                                </div>
+                                {account?.qrCode ? (
+                                    <div className="rounded-2xl border-4 border-white shadow-md shadow-black/5 ring-1 ring-border p-2 bg-white">
+                                        <img
+                                            src={getAssetUrl(account.qrCode)}
+                                            alt="Payment QR code"
+                                            className="h-56 w-56 rounded-lg object-cover"
                                         />
                                     </div>
-                                    <FormMessage>{form.formState.errors.qrCode?.message}</FormMessage>
-                                </div>
-
-                                <Separator />
-
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <FormField
-                                        control={form.control}
-                                        name="bankName"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Bank Name</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="State Bank of India" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="accountNumber"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Account Number</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="1234567890123" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="ifscCode"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>IFSC Code</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="SBIN0001234" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="branch"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Branch</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Main Branch" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+                                ) : (
+                                    <div className="h-56 w-56 rounded-2xl border border-dashed flex flex-col items-center justify-center text-muted-foreground gap-2">
+                                        <ImageOff className="h-6 w-6" />
+                                        <span className="text-xs">QR code not set</span>
+                                    </div>
+                                )}
+                                {account?.upiId && (
+                                    <p className="text-xs text-muted-foreground text-center max-w-[220px]">
+                                        Donors can scan this code with any UPI app to pay instantly.
+                                    </p>
+                                )}
                             </div>
 
-                            <Separator />
+                            {/* Right: UPI + bank details */}
+                            <div className="px-6 py-8 space-y-6">
+                                <div>
+                                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-3">
+                                        <Wallet className="h-3.5 w-3.5" />
+                                        UPI
+                                    </div>
+                                    <CopyableField label="UPI ID" value={account?.upiId} />
+                                </div>
 
-                            <div className="flex justify-end px-6 py-4">
-                                <Button
-                                    type="submit"
-                                    variant="theme"
-                                    size="sm"
-                                    disabled={mutation.isPending || qrCodeMutation.isPending}
-                                >
-                                    {mutation.isPending && <LoaderCircle className="animate-spin mr-2 h-3.5 w-3.5" />}
-                                    Save Changes
-                                </Button>
+                                <div>
+                                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-3">
+                                        <Landmark className="h-3.5 w-3.5" />
+                                        BANK DETAILS
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <CopyableField label="Bank Name" value={account?.bankName} />
+                                        <CopyableField label="Branch" value={account?.branch} />
+                                        <CopyableField label="Account Number" value={account?.accountNumber} />
+                                        <CopyableField label="IFSC Code" value={account?.ifscCode} />
+                                    </div>
+                                </div>
                             </div>
-                        </form>
-                    </Form>
-                </div>
+                        </div>
+                    </div>
+                )}
             </div>
-
-            <AlertDialog open={removeQrDialogOpen} onOpenChange={setRemoveQrDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Remove the payment QR code?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            It will immediately disappear from the public donate page. Donors will still be able to
-                            pay via UPI or bank transfer if those are configured.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={removeQrMutation.isPending}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => removeQrMutation.mutate()}
-                            disabled={removeQrMutation.isPending}
-                            className="bg-red-600 hover:bg-red-700"
-                        >
-                            {removeQrMutation.isPending ? 'Removing...' : 'Remove'}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
 };

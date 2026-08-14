@@ -1,7 +1,11 @@
 /**
- * Creates the default payment receiving account (QR/UPI/bank details donors
- * pay into). Every campaign auto-attaches this account unless a different
- * one is explicitly assigned.
+ * Creates or updates the default payment receiving account (QR/UPI/bank
+ * details donors pay into). Every campaign auto-attaches this account
+ * unless a different one is explicitly assigned.
+ *
+ * This is the ONLY way to set or change these details — there is no admin
+ * UI or write API for it, by design, so bank/UPI details can't be tampered
+ * with through the app.
  *
  * Usage:
  *   npm run seed:payment
@@ -11,6 +15,14 @@
  * from .env. At least one of PAYMENT_UPI_ID / PAYMENT_ACCOUNT_NUMBER is
  * required — a payment account with no way to actually receive payment
  * isn't useful.
+ *
+ * PAYMENT_QR_CODE should be a static path under /uploads, e.g.
+ * "/uploads/qrcode/qrcode.png" — drop the actual image file directly into
+ * backend/public/uploads/qrcode/ yourself; there is no upload endpoint for it.
+ *
+ * Re-running this script UPDATES the existing default account in place
+ * (rather than refusing to touch it), so it doubles as the edit tool for
+ * these details going forward.
  */
 import mongoose from "mongoose";
 import { config } from "../src/config/config.js";
@@ -42,15 +54,7 @@ const seedPaymentReceiving = async () => {
     isDeleted: false,
   });
 
-  if (existingDefault) {
-    console.log("A default payment receiving account already exists:");
-    console.log(`  id          : ${existingDefault._id}`);
-    console.log(`  accountName : ${existingDefault.accountName}`);
-    await mongoose.disconnect();
-    process.exit(0);
-  }
-
-  const account = await paymentReceivingModel.create({
+  const fields = {
     accountName: process.env.PAYMENT_ACCOUNT_NAME || "NGO Default Account",
     upiId,
     bankName: process.env.PAYMENT_BANK_NAME || undefined,
@@ -58,11 +62,22 @@ const seedPaymentReceiving = async () => {
     ifscCode: process.env.PAYMENT_IFSC_CODE || undefined,
     branch: process.env.PAYMENT_BRANCH || undefined,
     qrCode: process.env.PAYMENT_QR_CODE || undefined,
-    isDefault: true,
-    createdBy: admin._id,
-  });
+  };
 
-  console.log("Default payment receiving account created:");
+  let account;
+  if (existingDefault) {
+    existingDefault.set(fields);
+    account = await existingDefault.save();
+    console.log("Default payment receiving account updated:");
+  } else {
+    account = await paymentReceivingModel.create({
+      ...fields,
+      isDefault: true,
+      createdBy: admin._id,
+    });
+    console.log("Default payment receiving account created:");
+  }
+
   console.log(`  id          : ${account._id}`);
   console.log(`  accountName : ${account.accountName}`);
 

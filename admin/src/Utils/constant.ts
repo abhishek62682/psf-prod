@@ -18,6 +18,8 @@ export const PAGE_TITLES: Record<string, string> = {
   "/dashboard/donations": "Donations",
   "/dashboard/payment-receiving": "Payment Receiving",
   "/dashboard/contact": "Messages",
+  "/dashboard/events": "Events",
+  "/dashboard/events/create": "Create Event",
 };
 
 export const getPageTitle = (pathname: string) => {
@@ -35,6 +37,9 @@ export const getPageTitle = (pathname: string) => {
   }
   if (/^\/dashboard\/donations\/[^/]+$/.test(pathname)) {
     return "Donation Details";
+  }
+  if (/^\/dashboard\/events\/[^/]+\/edit$/.test(pathname)) {
+    return "Edit Event";
   }
   return "Dashboard";
 };

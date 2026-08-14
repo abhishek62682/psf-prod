@@ -10,23 +10,23 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
-import { createCareer } from "@/config/api/career.api";
-import type { CareerFormPayload } from "@/config/api/career.api";
-import { CareerForm } from "./CareerForm";
+import { createEvent } from "@/config/api/event.api";
+import type { EventFormPayload } from "@/config/api/event.api";
+import { EventForm } from "./EventForm";
 
-const CreateCareerPage = () => {
+const CreateEventPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (payload: CareerFormPayload) => createCareer(payload),
+    mutationFn: (payload: EventFormPayload) => createEvent(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-careers"] });
-      toast.success("Career posting created", { description: "It's now live on the public careers page." });
-      navigate("/dashboard/careers");
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+      toast.success("Event created", { description: "It's now live on the public Our Work page." });
+      navigate("/dashboard/events");
     },
     onError: (error: AxiosError<{ message: string }>) => {
-      toast.error("Failed to create posting", {
+      toast.error("Failed to create event", {
         description: error.response?.data?.message ?? "Something went wrong. Please try again.",
       });
     },
@@ -37,7 +37,7 @@ const CreateCareerPage = () => {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/dashboard/careers">Careers</BreadcrumbLink>
+            <BreadcrumbLink href="/dashboard/events">Events</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -47,14 +47,14 @@ const CreateCareerPage = () => {
       </Breadcrumb>
 
       <div className="mt-6 max-w-3xl">
-        <CareerForm
+        <EventForm
           onSubmit={(payload) => mutation.mutate(payload)}
           isSubmitting={mutation.isPending}
-          submitLabel="Create Posting"
+          submitLabel="Create Event"
         />
       </div>
     </div>
   );
 };
 
-export default CreateCareerPage;
+export default CreateEventPage;

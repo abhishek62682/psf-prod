@@ -10,7 +10,7 @@ const uploadDir = path.resolve(__dirname, "../../public/uploads");
 
 // Organized upload folders. Whitelist prevents path traversal
 // (never trust req.query directly in a filesystem path).
-export const ALLOWED_TYPES = ["thumbnail", "gallery", "screenshot", "profile", "qrcode"];
+export const ALLOWED_TYPES = ["thumbnail", "gallery", "screenshot", "profile", "event"];
 
 // Resolves the upload type from the request:
 // req.uploadType (set by route, e.g. donations/profile) > ?type= query
@@ -40,7 +40,7 @@ const storage = multer.diskStorage({
       return cb(
         createHttpError(
           400,
-          "A valid upload type is required. Allowed: thumbnail, gallery, screenshot, profile, qrcode."
+          "A valid upload type is required. Allowed: thumbnail, gallery, screenshot, profile, event."
         )
       );
     }

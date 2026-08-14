@@ -1,9 +1,6 @@
-import useSWR from "swr";
 import { Link } from "react-router-dom";
 import { Reveal } from "@/components/Reveal";
 import { Icon } from "@iconify/react";
-import { listCareers } from "@/config/api/career.api";
-import type { Career, CareerEmploymentType } from "@/config/api/career.api";
 
 const CAREER_EMAIL = "career@proyakhfoundation.org";
 
@@ -14,34 +11,7 @@ const perks = [
   { icon: "lucide:map-pin", title: "Local Impact", desc: "Work closely with communities in Assam." },
 ];
 
-const employmentTypeLabels: Record<CareerEmploymentType, string> = {
-  "full-time": "Full-Time",
-  "part-time": "Part-Time",
-  internship: "Internship",
-};
-
-const employmentTypeStyles: Record<CareerEmploymentType, string> = {
-  "full-time": "bg-accent/10 text-accent",
-  "part-time": "bg-accent/10 text-accent",
-  internship: "bg-lavender/30 text-[#7B6CB0]",
-};
-
-const workModeLabels: Record<Career["workMode"], string> = {
-  "on-site": "On-Site",
-  hybrid: "Hybrid",
-  remote: "Remote",
-};
-
-const applyMailto = (c: Career) => {
-  const subject = `Application for ${c.title}`;
-  const body = `Hi,\n\nI am interested in applying for the ${c.title} position at Proyakh Social Foundation.\n\nPlease find my resume/details below.\n\nThanks,`;
-  return `mailto:${CAREER_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-};
-
 export function CareersPage() {
-  const { data: positions, isLoading, error } = useSWR("careers", listCareers);
-  const list = positions ?? [];
-
   return (
     <>
       <section className="bg-warm pt-36 pb-20 md:pt-44 md:pb-28">
@@ -100,58 +70,16 @@ export function CareersPage() {
             </Reveal>
           </div>
 
-          {isLoading && <p className="text-center text-sm text-[#111111]/30">Loading open positions…</p>}
-
-          {error && (
-            <p className="text-center text-sm text-accent">Couldn't load open positions right now. Please try again later.</p>
-          )}
-
-          {!isLoading && !error && list.length === 0 && (
-            <p className="text-center text-sm text-[#111111]/30">No open positions right now. Check back soon.</p>
-          )}
-
-          <div className="space-y-6 max-w-3xl mx-auto">
-            {list.map((p, i) => (
-              <Reveal key={p._id} className={`vacancy-card bg-warm-alt border border-[#111111]/[0.07] rounded-2xl p-8 md:p-10 ${i > 0 ? `reveal-delay-${i}` : ""}`}>
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2.5 mb-4">
-                      <span className={`tag ${employmentTypeStyles[p.employmentType]} px-3 py-1 rounded-sm text-[10px] font-semibold tracking-wide uppercase`}>
-                        {employmentTypeLabels[p.employmentType]}
-                      </span>
-                      <span className="tag bg-[#111111]/[0.04] text-[#111111]/40 px-3 py-1 rounded-sm text-[10px] font-semibold tracking-wide uppercase">
-                        {workModeLabels[p.workMode]}
-                      </span>
-                      <span className="tag bg-[#111111]/[0.04] text-[#111111]/40 px-3 py-1 rounded-sm text-[10px] font-semibold tracking-wide uppercase">
-                        {p.location}
-                      </span>
-                    </div>
-                    <h3 className="font-serif text-2xl md:text-[28px] text-[#111111] leading-[1.15] mb-3">{p.title}</h3>
-                    <p className="text-sm text-[#111111]/40 leading-relaxed mb-5">{p.description}</p>
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#111111]/35">
-                      <span className="flex items-center gap-1.5">
-                        <Icon icon={p.employmentType === "internship" ? "lucide:clock" : "lucide:briefcase"} className="w-3.5 h-3.5" />
-                        {p.experience}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Icon icon="lucide:graduation-cap" className="w-3.5 h-3.5" />
-                        {p.qualification}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="shrink-0 md:pt-1">
-                    <a
-                      href={applyMailto(p)}
-                      className="btn-press bg-[#111111] text-white text-sm font-medium px-6 py-3 rounded-sm hover:bg-[#1a1a1c] hover:shadow-lg hover:shadow-[#111111]/15 transition-all duration-400 inline-flex items-center gap-2 group"
-                    >
-                      Apply Now
-                      <Icon icon="lucide:arrow-right" className="w-4 h-4 vacancy-arrow" />
-                    </a>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+          <Reveal className="max-w-xl mx-auto bg-warm-alt border border-[#111111]/[0.07] rounded-2xl p-10 text-center">
+            <Icon icon="lucide:coffee" className="w-8 h-8 text-accent mx-auto block mb-4" />
+            <p className="text-base text-[#111111]/50 leading-relaxed">
+              We're not actively hiring right now — check back soon, or reach out directly at{" "}
+              <a href={`mailto:${CAREER_EMAIL}`} className="text-accent font-medium hover:underline">
+                {CAREER_EMAIL}
+              </a>
+              .
+            </p>
+          </Reveal>
         </div>
       </section>
 

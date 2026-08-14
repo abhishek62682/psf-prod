@@ -3,13 +3,14 @@ import httpClient from "@/config/http/httpClient";
 /* ================================
    Matches src/upload/* on the backend exactly.
    Both endpoints require auth (mounted behind authenticate in uploadRouter.js).
-   thumbnail/gallery/qrcode are reachable here — screenshot (donations) and
+   thumbnail/gallery/event are reachable here — screenshot (donations) and
    profile (avatar, see profile.api.ts's uploadAvatar) are forced server-side
    on their own dedicated routes, not selectable through this generic one.
-   There is no "misc" fallback anymore.
+   There is no "misc" fallback anymore. qrcode is not an uploadable type —
+   the payment QR is a static file dropped into public/uploads/qrcode/.
 ================================ */
 
-export type UploadType = "thumbnail" | "gallery" | "qrcode";
+export type UploadType = "thumbnail" | "gallery" | "event";
 
 interface ApiResponse<T> {
   success: boolean;

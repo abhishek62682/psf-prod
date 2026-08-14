@@ -18,7 +18,7 @@ import donationRouter from "./donation/donationRouter.js";
 import uploadRouter from "./upload/uploadRouter.js";
 import paymentReceivingRouter from "./paymentReceiving/paymentReceivingRouter.js";
 import contactRouter from "./contact/contactRouter.js";
-import careerRouter from "./career/careerRouter.js";
+import eventRouter from "./event/eventRouter.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -70,7 +70,7 @@ app.use("/api/donations", donationRouter);
 app.use("/api/uploads", uploadRouter);
 app.use("/api/payment-receiving", paymentReceivingRouter);
 app.use("/api/contact", contactRouter);
-app.use("/api/careers", careerRouter);
+app.use("/api/events", eventRouter);
 
 // ----- 404 handler -----
 app.use((req, res, next) => {

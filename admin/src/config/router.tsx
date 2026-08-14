@@ -16,11 +16,10 @@ import CampaignDonationsPage from "@/pages/dashboard-pages/campaign-page/Campaig
 import DonationsPage from "@/pages/dashboard-pages/donation-page/DonationsPage";
 import DonationDetailPage from "@/pages/dashboard-pages/donation-page/DonationDetailPage";
 import PaymentReceivingPage from "@/pages/dashboard-pages/payment-receiving-page";
-import AuditLogsPage from "@/pages/dashboard-pages/audit-log-page/AuditLogsPage";
 import ContactMessagesPage from "@/pages/dashboard-pages/contact-page/ContactMessagesPage";
-import CareersPage from "@/pages/dashboard-pages/career-page/CareersPage";
-import CreateCareerPage from "@/pages/dashboard-pages/career-page/CreateCareerPage";
-import EditCareerPage from "@/pages/dashboard-pages/career-page/EditCareerPage";
+import EventsPage from "@/pages/dashboard-pages/event-page/EventsPage";
+import CreateEventPage from "@/pages/dashboard-pages/event-page/CreateEventPage";
+import EditEventPage from "@/pages/dashboard-pages/event-page/EditEventPage";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 // Skeleton route table. Login → OTP is the only real (backend-wired) flow.
@@ -126,14 +125,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "audit-logs",
-        element: (
-          <RoleGuard behavior="redirect" allowedRoles={ROLE_GROUPS.ALL}>
-            <AuditLogsPage />
-          </RoleGuard>
-        ),
-      },
-      {
         path: "contact",
         element: (
           <RoleGuard behavior="redirect" allowedRoles={ROLE_GROUPS.ALL}>
@@ -142,26 +133,26 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "careers",
+        path: "events",
         element: (
           <RoleGuard behavior="redirect" allowedRoles={ROLE_GROUPS.ALL}>
-            <CareersPage />
+            <EventsPage />
           </RoleGuard>
         ),
       },
       {
-        path: "careers/create",
+        path: "events/create",
         element: (
           <RoleGuard behavior="redirect" allowedRoles={ROLE_GROUPS.ALL}>
-            <CreateCareerPage />
+            <CreateEventPage />
           </RoleGuard>
         ),
       },
       {
-        path: "careers/:id/edit",
+        path: "events/:id/edit",
         element: (
           <RoleGuard behavior="redirect" allowedRoles={ROLE_GROUPS.ALL}>
-            <EditCareerPage />
+            <EditEventPage />
           </RoleGuard>
         ),
       },
