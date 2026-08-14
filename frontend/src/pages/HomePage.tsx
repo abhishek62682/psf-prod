@@ -153,7 +153,7 @@ export function HomePage() {
       </section>
 
       {/* ===== IMPACT STATS ===== */}
-      <section className="bg-warm-alt py-28 md:py-36">
+      {/* <section className="bg-warm-alt py-28 md:py-36">
         <div className="max-w-container mx-auto px-6 text-center">
           <Reveal as="h2" className="font-serif text-[40px] md:text-[56px] lg:text-[64px] text-[#111111] leading-tight tracking-tight mb-20">
             Creating Impact <span className="text-accent">Together</span>
@@ -197,7 +197,7 @@ export function HomePage() {
             </Reveal>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ===== WHO WE ARE ===== */}
       <section id="about" className="bg-warm py-28 md:py-36">

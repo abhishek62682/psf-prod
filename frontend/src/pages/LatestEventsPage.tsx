@@ -271,7 +271,7 @@ export function LatestEventsPage() {
       })}
 
       {/* ===== OVERALL IMPACT ===== */}
-      <section className="bg-warm-alt py-28 md:py-36 border-t border-[#111111]/[0.04]">
+      {/* <section className="bg-warm-alt py-28 md:py-36 border-t border-[#111111]/[0.04]">
         <div className="max-w-container mx-auto px-6 text-center">
           <Reveal as="p" className="label-text text-accent mb-6">
             ●&nbsp; OVERALL IMPACT
@@ -301,7 +301,7 @@ export function LatestEventsPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ===== CTA ===== */}
       <section className="bg-warm py-28 md:py-36 border-t border-[#111111]/[0.04]">
