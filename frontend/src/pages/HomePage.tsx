@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Reveal } from "@/components/Reveal";
-import { AnimatedCounter } from "@/components/AnimatedCounter";
+// import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ProgressBar } from "@/components/ProgressBar";
 import { DonorTicker } from "@/components/DonorTicker";
 import { FaqAccordion } from "@/components/FaqAccordion";
