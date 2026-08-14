@@ -74,8 +74,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/our-work" className="footer-link text-sm text-[#111111]/35">
-                  Our Work
+                <Link to="/latest-events" className="footer-link text-sm text-[#111111]/35">
+                  Latest Events
                 </Link>
               </li>
               <li>
@@ -93,11 +93,6 @@ export function Footer() {
                   Donate Now
                 </Link>
               </li>
-              <li>
-                <Link to="/careers" className="footer-link text-sm text-[#111111]/35">
-                  Careers
-                </Link>
-              </li>
             </ul>
           </Reveal>
           <Reveal className="text-center reveal-delay-3">
@@ -111,6 +106,11 @@ export function Footer() {
               <li>
                 <a href="mailto:hello@proyakhfoundation.org" className="footer-link text-sm text-[#111111]/35 break-words">
                   hello@<wbr />proyakhfoundation.org
+                </a>
+              </li>
+              <li>
+                <a href="mailto:career@proyakhfoundation.org" className="footer-link text-sm text-[#111111]/35 break-words">
+                  career@<wbr />proyakhfoundation.org
                 </a>
               </li>
               <li className="text-sm text-[#111111]/35">Kaki-1, Hojai, Assam</li>

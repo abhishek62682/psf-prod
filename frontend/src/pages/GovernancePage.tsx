@@ -183,7 +183,7 @@ export function GovernancePage() {
                 Get in Touch <span className="inline-block ml-1">→</span>
               </Link>
               <Link
-                to="/careers"
+                to="/contact"
                 className="btn-press bg-[#111111] text-white text-sm font-medium px-8 py-3.5 rounded-sm hover:bg-[#1a1a1c] hover:shadow-lg hover:shadow-[#111111]/15 transition-all duration-400"
               >
                 Become a Volunteer <span className="inline-block ml-1">→</span>

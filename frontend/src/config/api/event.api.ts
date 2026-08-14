@@ -22,7 +22,8 @@ export interface Event {
   images: string[];
   stats?: EventStat[];
   activities?: EventActivity[];
-  eventDate?: string;
+  eventStartDate?: string;
+  eventEndDate?: string;
 }
 
 interface ApiResponse<T> {

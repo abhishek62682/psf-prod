@@ -32,15 +32,22 @@ const eventBody = z.object({
       })
     )
     .optional(),
-  eventDate: z.coerce.date({ message: "Event date must be a valid date." }).optional(),
+  eventStartDate: z.coerce.date({ message: "Event start date must be a valid date." }).optional(),
+  eventEndDate: z.coerce.date({ message: "Event end date must be a valid date." }).optional(),
   status: z.enum(EVENT_STATUSES, { message: "Invalid status." }).optional(),
 });
 
-export const createEventSchema = z.object({ body: eventBody });
+const withDateRangeCheck = (schema) =>
+  schema.refine(
+    (data) => !data.eventStartDate || !data.eventEndDate || data.eventEndDate >= data.eventStartDate,
+    { message: "Event end date must be on or after the start date.", path: ["eventEndDate"] }
+  );
+
+export const createEventSchema = z.object({ body: withDateRangeCheck(eventBody) });
 
 export const updateEventSchema = z.object({
   params: z.object({ id: objectId }),
-  body: eventBody.partial(),
+  body: withDateRangeCheck(eventBody.partial()),
 });
 
 export const eventIdSchema = z.object({

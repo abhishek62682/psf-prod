@@ -50,7 +50,10 @@ const eventSchema = new mongoose.Schema(
       type: [eventActivitySchema],
       default: [],
     },
-    eventDate: {
+    eventStartDate: {
+      type: Date,
+    },
+    eventEndDate: {
       type: Date,
     },
     status: {

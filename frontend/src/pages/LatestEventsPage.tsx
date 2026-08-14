@@ -19,6 +19,29 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
+const DAY_MONTH_FMT: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
+const FULL_DATE_FMT: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", year: "numeric" };
+
+// e.g. "12 Aug – 13 Aug 2026 · 2 days." (single date collapses to "12 Aug 2026 · 1 day.")
+function formatEventDateLine(startDate?: string, endDate?: string) {
+  if (!startDate && !endDate) return null;
+
+  const start = new Date(startDate ?? endDate!);
+  const end = new Date(endDate ?? startDate!);
+  const sameDay = start.toDateString() === end.toDateString();
+  const sameYear = start.getFullYear() === end.getFullYear();
+
+  const days = Math.round((end.setHours(0, 0, 0, 0) - start.setHours(0, 0, 0, 0)) / 86400000) + 1;
+
+  const dateText = sameDay
+    ? start.toLocaleDateString("en-GB", FULL_DATE_FMT)
+    : sameYear
+      ? `${start.toLocaleDateString("en-GB", DAY_MONTH_FMT)} – ${end.toLocaleDateString("en-GB", FULL_DATE_FMT)}`
+      : `${start.toLocaleDateString("en-GB", FULL_DATE_FMT)} – ${end.toLocaleDateString("en-GB", FULL_DATE_FMT)}`;
+
+  return `${dateText} · ${days} day${days > 1 ? "s" : ""}.`;
+}
+
 function StatRow({ stats }: { stats: { value: string; label: string }[];  }) {
   return (
     <Reveal className={`grid grid-cols-3 mx-auto gap-5 max-w-2xl`}>
@@ -100,7 +123,7 @@ function EventImageSliderInner({ list, alt }: { list: string[]; alt: string }) {
   );
 }
 
-export function OurWorkPage() {
+export function LatestEventsPage() {
   const { data: events, isLoading: eventsLoading, error: eventsError } = useSWR("events", listEvents);
   const eventList = events ?? [];
 
@@ -123,7 +146,7 @@ export function OurWorkPage() {
       <section className="bg-warm pt-36 pb-20 md:pt-44 md:pb-28">
         <div className="max-w-container mx-auto px-6 text-center">
           <Reveal as="p" className="label-text text-accent mb-8">
-            ●&nbsp; OUR WORK
+            ●&nbsp; LATEST EVENTS
           </Reveal>
           <Reveal as="h1" className="reveal-delay-1 font-serif text-[48px] md:text-[72px] lg:text-[88px] text-[#111111] leading-[1.05] tracking-tight">
             What We Do.
@@ -179,6 +202,7 @@ export function OurWorkPage() {
         const bg = i % 2 === 0 ? "bg-warm-alt" : "bg-warm";
         const isFirstInCategory = e.category ? categoryFirstIndex[e.category] === i : false;
         const sectionId = isFirstInCategory ? slugify(e.category) : undefined;
+        const dateLine = formatEventDateLine(e.eventStartDate, e.eventEndDate);
         return (
           <div key={e._id}>
             <section id={sectionId} className={`${bg} pt-28 md:pt-36 pb-16 ${i > 0 ? "border-t border-[#111111]/[0.04]" : ""}`}>
@@ -197,9 +221,14 @@ export function OurWorkPage() {
                         <p className="label-text text-accent">{e.category.toUpperCase()}</p>
                       </Reveal>
                     )}
-                    <Reveal as="h2" className="reveal-delay-1 font-serif text-[36px] md:text-[44px] lg:text-[52px] text-[#111111] leading-[1.1] tracking-tight mb-6">
+                    <Reveal as="h2" className={`reveal-delay-1 font-serif text-[36px] md:text-[44px] lg:text-[52px] text-[#111111] leading-[1.1] tracking-tight ${dateLine ? "mb-3" : "mb-6"}`}>
                       {e.title}
                     </Reveal>
+                    {dateLine && (
+                      <Reveal className="reveal-delay-1 mb-6">
+                        <p className="text-sm text-[#111111]/40">{dateLine}</p>
+                      </Reveal>
+                    )}
                     <Reveal as="p" className="reveal-delay-2 text-base text-[#111111]/50 leading-relaxed mb-10">
                       {e.description}
                     </Reveal>

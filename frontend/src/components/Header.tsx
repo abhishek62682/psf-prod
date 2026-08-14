@@ -56,9 +56,6 @@ export function Header() {
                     <Link to="/about" className="block px-4 py-2.5 text-sm text-[#111111]/55 hover:text-[#111111] hover:bg-[#111111]/[0.03] transition-colors duration-200">
                       Who We Are
                     </Link>
-                    <Link to="/our-work" className="block px-4 py-2.5 text-sm text-[#111111]/55 hover:text-[#111111] hover:bg-[#111111]/[0.03] transition-colors duration-200">
-                      Our Work
-                    </Link>
                     <Link to="/governance" className="block px-4 py-2.5 text-sm text-[#111111]/55 hover:text-[#111111] hover:bg-[#111111]/[0.03] transition-colors duration-200">
                       Governance
                     </Link>
@@ -71,8 +68,8 @@ export function Header() {
               <NavLink to="/donors" className={navLinkClass}>
                 Donors
               </NavLink>
-              <NavLink to="/careers" className={navLinkClass}>
-                Career
+              <NavLink to="/latest-events" className={navLinkClass}>
+                Latest Events
               </NavLink>
               <NavLink to="/contact" className={navLinkClass}>
                 Contact
@@ -125,9 +122,6 @@ export function Header() {
                 <Link to="/about" className="text-lg font-serif text-[#111111]/50 hover:text-accent transition-colors duration-300" onClick={closeMenu}>
                   Who We Are
                 </Link>
-                <Link to="/our-work" className="text-lg font-serif text-[#111111]/50 hover:text-accent transition-colors duration-300" onClick={closeMenu}>
-                  Our Work
-                </Link>
                 <Link to="/governance" className="text-lg font-serif text-[#111111]/50 hover:text-accent transition-colors duration-300" onClick={closeMenu}>
                   Governance
                 </Link>
@@ -140,8 +134,8 @@ export function Header() {
           <Link to="/donors" className="text-2xl font-serif text-[#111111]/50 hover:text-accent transition-colors duration-300" onClick={closeMenu}>
             Donors
           </Link>
-          <Link to="/careers" className="text-2xl font-serif text-[#111111]/50 hover:text-accent transition-colors duration-300" onClick={closeMenu}>
-            Careers
+          <Link to="/latest-events" className="text-2xl font-serif text-[#111111]/50 hover:text-accent transition-colors duration-300" onClick={closeMenu}>
+            Latest Events
           </Link>
           <Link to="/contact" className="text-2xl font-serif text-[#111111]/50 hover:text-accent transition-colors duration-300" onClick={closeMenu}>
             Contact

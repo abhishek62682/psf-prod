@@ -273,7 +273,7 @@ export function HomePage() {
                 </div>
                 <h3 className="font-serif text-2xl text-[#111111] mb-3">{f.title}</h3>
                 <p className="text-sm text-[#111111]/40 leading-relaxed mb-5">{f.desc}</p>
-                <Link to="/our-work" className="focus-link text-sm font-medium text-accent">
+                <Link to="/latest-events" className="focus-link text-sm font-medium text-accent">
                   Learn More <span className="inline-block ml-1">→</span>
                 </Link>
               </Reveal>
