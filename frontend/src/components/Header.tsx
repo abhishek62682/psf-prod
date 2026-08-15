@@ -3,7 +3,7 @@ import { NavLink, Link } from "react-router-dom";
 import { useScrollState } from "@/hooks/useScrollState";
 import { Icon } from "@iconify/react";
 
-const LOGO_SRC = "/images/logo.webp";
+const LOGO_SRC = "/wordmark-logo.png";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `nav-link text-sm font-medium ${isActive ? "text-[#111111]" : "text-[#111111]/55 hover:text-[#111111]"}`;
@@ -37,13 +37,15 @@ export function Header() {
         id="navbar"
         className={`fixed top-0 left-0 right-0 z-50 bg-warm border-b border-[#111111]/[0.04] ${scrolled ? "scrolled" : ""}`}
       >
-        <div className="max-w-container mx-auto px-6 flex items-center justify-between h-16">
+        <div className="max-w-container mx-auto px-6 flex items-center justify-between h-22">
           <div className="flex items-center gap-3.5">
             <Link to="/" className="flex items-center gap-3 shrink-0 logo-wrap">
-              <img src={LOGO_SRC} alt="Proyakh Social Foundation" className="logo-img w-10 h-10 rounded-full object-cover" />
-              <span className="nav-name text-[#111111] hidden lg:inline">Proyakh Social Foundation</span>
+              <img src={LOGO_SRC} alt="Proyakh Social Foundation" className="logo-img w-24 md:w-30  object-cover" />
+            
             </Link>
-            <div className="hidden lg:flex items-center gap-8 ml-8">
+           
+          </div>
+           <div className="hidden lg:flex items-center gap-8 ml-8">
               <NavLink to="/" end className={navLinkClass}>
                 Home
               </NavLink>
@@ -69,13 +71,18 @@ export function Header() {
                 Donors
               </NavLink>
               <NavLink to="/latest-events" className={navLinkClass}>
-                Latest Events
+              
+                
+                <div className="relative">
+                  Latest Events
+
+                  <span className="relative text-white font-semibold text-[10px] py-0.5 rounded-[10px] px-2 -top-3 text-xs bg-[#dc2626]">New</span>
+                </div>
               </NavLink>
               <NavLink to="/contact" className={navLinkClass}>
                 Contact
               </NavLink>
             </div>
-          </div>
           <div className="flex items-center">
             <Link
               to="/donate"
@@ -93,11 +100,11 @@ export function Header() {
         </div>
       </nav>
 
-      <div id="mobileMenu" className={`mobile-menu fixed inset-0 z-[60] bg-warm ${menuOpen ? "open" : ""}`}>
+      <div id="mobileMenu" className={`mobile-menu  fixed inset-0 z-[60] bg-warm ${menuOpen ? "open" : ""}`}>
         <div className="flex items-center justify-between px-6 h-16">
           <Link to="/" className="flex items-center gap-3 logo-wrap" onClick={closeMenu}>
-            <img src={LOGO_SRC} alt="Proyakh" className="logo-img w-10 h-10 rounded-full object-cover" />
-            <span className="font-serif text-2xl text-[#111111]">Proyakh Social Foundation</span>
+            <img src={LOGO_SRC} alt="Proyakh" className="logo-img w-24 object-cover" />
+            
           </Link>
           <button
             onClick={closeMenu}
@@ -135,7 +142,11 @@ export function Header() {
             Donors
           </Link>
           <Link to="/latest-events" className="text-2xl font-serif text-[#111111]/50 hover:text-accent transition-colors duration-300" onClick={closeMenu}>
-            Latest Events
+            <div className="relative">
+                  Latest Events
+
+                  <span className="relative font-secondary font-sans text-white font-semibold text-[10px] py-0.5 rounded-[10px] px-2 -top-3 left-2 text-xs bg-[#dc2626]">New</span>
+                </div>
           </Link>
           <Link to="/contact" className="text-2xl font-serif text-[#111111]/50 hover:text-accent transition-colors duration-300" onClick={closeMenu}>
             Contact
