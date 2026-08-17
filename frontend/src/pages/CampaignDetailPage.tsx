@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
+import useSWR from "swr";
 import { Reveal } from "@/components/Reveal";
 import { ProgressBar } from "@/components/ProgressBar";
-import { useFetch } from "@/hooks/useFetch";
 import { getCampaignById, getCampaignDonations } from "@/config/api/campaign.api";
 import { getAssetUrl } from "@/Utils/constant";
 import { formatCurrency, formatDonorDate, getInitials, getAvatarColor } from "@/data/donorsData";
@@ -9,8 +9,14 @@ import { formatCurrency, formatDonorDate, getInitials, getAvatarColor } from "@/
 export function CampaignDetailPage() {
   const { id } = useParams<{ id: string }>();
 
-  const { data: campaign, isLoading, error } = useFetch(() => getCampaignById(id!), [id], !!id);
-  const { data: donationsData } = useFetch(() => getCampaignDonations(id!, { limit: 10 }), [id], !!id);
+  const { data: campaign, isLoading, error } = useSWR(
+    id ? ["campaign", id] : null,
+    () => getCampaignById(id!)
+  );
+  const { data: donationsData } = useSWR(
+    id ? ["campaign-donations", id] : null,
+    () => getCampaignDonations(id!, { limit: 10 })
+  );
   const donations = donationsData?.donations ?? [];
 
   if (isLoading) {
@@ -92,6 +98,26 @@ export function CampaignDetailPage() {
                         <div key={img} className="rounded-sm overflow-hidden break-inside-avoid">
                           <img src={getAssetUrl(img)} alt="" className="w-full h-auto object-cover" loading="lazy" />
                         </div>
+                      ))}
+                    </div>
+                  </Reveal>
+                )}
+
+                {campaign.documents && campaign.documents.length > 0 && (
+                  <Reveal className="reveal-delay-3 mt-10">
+                    <p className="label-text text-[#111111]/30 mb-4">DOCUMENTS</p>
+                    <div className="space-y-2">
+                      {campaign.documents.map((doc) => (
+                        <a
+                          key={doc.url}
+                          href={getAssetUrl(doc.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between border border-[#111111]/[0.07] rounded-sm px-4 py-3 text-sm text-[#111111]/60 hover:text-accent hover:border-accent/30 transition-colors duration-300"
+                        >
+                          <span>{doc.label}</span>
+                          <span className="text-accent text-xs font-medium">View / Download →</span>
+                        </a>
                       ))}
                     </div>
                   </Reveal>

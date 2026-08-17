@@ -33,6 +33,22 @@ const ALLOWED_MIME_TYPES = [
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 export const MAX_GALLERY_FILES = 10;
 
+// Document (PDF) uploads for events/campaigns — separate whitelist/folder
+// from the image types above so PDFs never land in an image-only directory.
+export const ALLOWED_DOCUMENT_TYPES = ["event", "campaign"];
+
+export const resolveDocumentUploadType = (req) => {
+  const type = req.uploadType || req.query.type;
+  return ALLOWED_DOCUMENT_TYPES.includes(type) ? type : null;
+};
+
+const DOCUMENT_ALLOWED_EXTENSIONS = [".pdf"];
+const DOCUMENT_ALLOWED_MIME_TYPES = ["application/pdf", "application/octet-stream"];
+const MAX_DOCUMENT_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+// Highest per-entity cap (event: 6, campaign: 6) — exact limits are enforced
+// by Zod validation on the entity payload; this only bounds the multer array.
+export const MAX_DOCUMENT_FILES = 6;
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const type = resolveUploadType(req);
@@ -73,6 +89,43 @@ const upload = multer({
   storage,
   fileFilter,
   limits: { fileSize: MAX_FILE_SIZE },
+});
+
+const documentStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const type = resolveDocumentUploadType(req);
+    if (!type) {
+      return cb(
+        createHttpError(400, "A valid upload type is required. Allowed: event, campaign.")
+      );
+    }
+    const dir = path.join(uploadDir, "documents", type);
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${unique}${ext}`);
+  },
+});
+
+const documentFileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  if (
+    !DOCUMENT_ALLOWED_EXTENSIONS.includes(ext) ||
+    !DOCUMENT_ALLOWED_MIME_TYPES.includes(file.mimetype)
+  ) {
+    return cb(createHttpError(400, "Only PDF files are allowed."));
+  }
+  cb(null, true);
+};
+
+export const uploadDocuments = multer({
+  storage: documentStorage,
+  fileFilter: documentFileFilter,
+  limits: { fileSize: MAX_DOCUMENT_FILE_SIZE },
 });
 
 // Deletes a previously uploaded file given its stored "/uploads/..." URL —

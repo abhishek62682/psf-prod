@@ -10,6 +10,11 @@ export interface CampaignOption {
   title: string;
 }
 
+export interface CampaignDocument {
+  url: string;
+  label: string;
+}
+
 export interface Campaign {
   _id: string;
   title: string;
@@ -20,6 +25,7 @@ export interface Campaign {
   totalDonors: number;
   coverImage: string;
   gallery: string[];
+  documents?: CampaignDocument[];
   startDate: string;
   endDate: string;
   isFeatured: boolean;

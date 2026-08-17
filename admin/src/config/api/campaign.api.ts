@@ -5,6 +5,11 @@ import type { CampaignStatus, CampaignAdminView } from "@/config/campaignConstan
    Matches src/campaign/* on the backend exactly (see api.md / api-test.md).
 ================================ */
 
+export interface CampaignDocument {
+  url: string;
+  label: string;
+}
+
 export interface Campaign {
   _id: string;
   title: string;
@@ -16,6 +21,7 @@ export interface Campaign {
   totalDonors: number;
   coverImage: string;
   gallery: string[];
+  documents?: CampaignDocument[];
   startDate: string;
   endDate: string;
   isFeatured: boolean;
@@ -73,6 +79,7 @@ export interface CampaignFormPayload {
   goalAmount: number;
   coverImage?: string;
   gallery?: string[];
+  documents?: CampaignDocument[];
   startDate: string;
   endDate: string;
   isFeatured?: boolean;

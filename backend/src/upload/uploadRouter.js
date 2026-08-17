@@ -1,7 +1,7 @@
 import express from "express";
-import { uploadImage, uploadMultipleImages } from "./uploadController.js";
+import { uploadImage, uploadMultipleImages, uploadDocumentFiles } from "./uploadController.js";
 import authenticate from "../middlewares/authenticate.js";
-import upload, { MAX_GALLERY_FILES } from "../middlewares/upload.js";
+import upload, { MAX_GALLERY_FILES, uploadDocuments, MAX_DOCUMENT_FILES } from "../middlewares/upload.js";
 
 const uploadRouter = express.Router();
 
@@ -15,6 +15,13 @@ uploadRouter.post(
   "/images",
   upload.array("images", MAX_GALLERY_FILES),
   uploadMultipleImages
+);
+
+// POST /api/uploads/documents?type=event|campaign  (multiple PDFs, max 6)
+uploadRouter.post(
+  "/documents",
+  uploadDocuments.array("documents", MAX_DOCUMENT_FILES),
+  uploadDocumentFiles
 );
 
 export default uploadRouter;

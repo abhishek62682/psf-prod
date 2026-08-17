@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { objectId } from "../middlewares/validate.js";
-import { CAMPAIGN_STATUSES } from "./campaignConstants.js";
+import { CAMPAIGN_STATUSES, CAMPAIGN_MAX_DOCUMENTS } from "./campaignConstants.js";
 
 const campaignBody = z.object({
   title: z.string({ message: "Title is required." }).trim().min(1, { message: "Title is required." }),
@@ -18,6 +18,15 @@ const campaignBody = z.object({
     .positive({ message: "Goal amount must be a positive number." }),
   coverImage: z.string().optional(),
   gallery: z.array(z.string()).optional(),
+  documents: z
+    .array(
+      z.object({
+        url: z.string().trim().min(1, { message: "Document url is required." }),
+        label: z.string().trim().min(1, { message: "Document label is required." }),
+      })
+    )
+    .max(CAMPAIGN_MAX_DOCUMENTS, { message: `Upload at most ${CAMPAIGN_MAX_DOCUMENTS} PDF files.` })
+    .optional(),
   startDate: z.coerce.date({ message: "Start date must be a valid date." }),
   endDate: z.coerce.date({ message: "End date must be a valid date." }),
   isFeatured: z.coerce.boolean().optional(),

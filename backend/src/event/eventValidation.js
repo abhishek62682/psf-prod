@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { objectId } from "../middlewares/validate.js";
-import { EVENT_MIN_IMAGES, EVENT_MAX_IMAGES, EVENT_STATUSES } from "./eventConstants.js";
+import { EVENT_MIN_IMAGES, EVENT_MAX_IMAGES, EVENT_MAX_DOCUMENTS, EVENT_STATUSES } from "./eventConstants.js";
 
 const eventBody = z.object({
   title: z.string({ message: "Title is required." }).trim().min(1, { message: "Title is required." }),
@@ -16,6 +16,15 @@ const eventBody = z.object({
     .array(z.string())
     .min(EVENT_MIN_IMAGES, { message: `Upload at least ${EVENT_MIN_IMAGES} photo.` })
     .max(EVENT_MAX_IMAGES, { message: `Upload at most ${EVENT_MAX_IMAGES} photos.` }),
+  documents: z
+    .array(
+      z.object({
+        url: z.string().trim().min(1, { message: "Document url is required." }),
+        label: z.string().trim().min(1, { message: "Document label is required." }),
+      })
+    )
+    .max(EVENT_MAX_DOCUMENTS, { message: `Upload at most ${EVENT_MAX_DOCUMENTS} PDF files.` })
+    .optional(),
   stats: z
     .array(
       z.object({

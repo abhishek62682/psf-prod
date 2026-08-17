@@ -1,5 +1,5 @@
 import createHttpError from "http-errors";
-import { resolveUploadType } from "../middlewares/upload.js";
+import { resolveUploadType, resolveDocumentUploadType } from "../middlewares/upload.js";
 
 // POST /api/uploads/image?type=thumbnail|gallery  (single file)
 const uploadImage = async (req, res, next) => {
@@ -46,4 +46,27 @@ const uploadMultipleImages = async (req, res, next) => {
   }
 };
 
-export { uploadImage, uploadMultipleImages };
+// POST /api/uploads/documents?type=event|campaign  (multiple PDFs)
+const uploadDocumentFiles = async (req, res, next) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return next(createHttpError(400, "At least one PDF file is required."));
+    }
+
+    const type = resolveDocumentUploadType(req);
+
+    return res.status(201).json({
+      success: true,
+      message: "Documents uploaded successfully.",
+      data: {
+        urls: req.files.map((file) => `/uploads/documents/${type}/${file.filename}`),
+        type,
+        count: req.files.length,
+      },
+    });
+  } catch (err) {
+    return next(createHttpError(500, "Error while uploading documents."));
+  }
+};
+
+export { uploadImage, uploadMultipleImages, uploadDocumentFiles };

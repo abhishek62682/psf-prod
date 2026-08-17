@@ -16,6 +16,15 @@ const eventActivitySchema = new mongoose.Schema(
   { _id: false }
 );
 
+const eventDocumentSchema = new mongoose.Schema(
+  {
+    url: { type: String, required: true },
+    // Admin-provided label shown in place of the raw filename, e.g. "Event Report 2026".
+    label: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const eventSchema = new mongoose.Schema(
   {
     title: {
@@ -38,6 +47,11 @@ const eventSchema = new mongoose.Schema(
     // message can be a clean 400 instead of a Mongoose ValidatorError.
     images: {
       type: [String],
+      default: [],
+    },
+    // Optional, up to 6 PDFs with admin-written labels, enforced in eventValidation.js.
+    documents: {
+      type: [eventDocumentSchema],
       default: [],
     },
     // Optional impact numbers shown on the event card, e.g. { value: "1000+", label: "Trees Planted" }.

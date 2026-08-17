@@ -87,11 +87,16 @@ const updateEvent = async (req, res, next) => {
       { new: true, runValidators: true }
     );
 
-    // Images replaced/removed by this update are no longer referenced —
-    // clean up the ones that dropped off.
+    // Images/documents replaced/removed by this update are no longer
+    // referenced — clean up the ones that dropped off.
     if (req.body.images !== undefined) {
       const removed = existing.images.filter((url) => !req.body.images.includes(url));
       removed.forEach((url) => deleteUploadedFile(url));
+    }
+    if (req.body.documents !== undefined) {
+      const newUrls = req.body.documents.map((d) => d.url);
+      const removed = existing.documents.filter((d) => !newUrls.includes(d.url));
+      removed.forEach((d) => deleteUploadedFile(d.url));
     }
 
     return res.json({

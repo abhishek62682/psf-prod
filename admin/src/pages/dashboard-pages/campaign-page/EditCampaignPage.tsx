@@ -94,6 +94,7 @@ const EditCampaignPage = () => {
             }}
             initialCoverImage={campaign.coverImage}
             initialGallery={campaign.gallery}
+            initialDocuments={campaign.documents}
             onSubmit={(payload) => mutation.mutate(payload)}
             isSubmitting={mutation.isPending}
             submitLabel="Save Changes"

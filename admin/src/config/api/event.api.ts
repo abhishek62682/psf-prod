@@ -17,12 +17,18 @@ export interface EventActivity {
   description: string;
 }
 
+export interface EventDocument {
+  url: string;
+  label: string;
+}
+
 export interface Event {
   _id: string;
   title: string;
   category: string;
   description: string;
   images: string[];
+  documents?: EventDocument[];
   stats?: EventStat[];
   activities?: EventActivity[];
   eventStartDate?: string;
@@ -44,6 +50,7 @@ export interface EventFormPayload {
   category: string;
   description: string;
   images: string[];
+  documents?: EventDocument[];
   stats?: EventStat[];
   activities?: EventActivity[];
   eventStartDate?: string;

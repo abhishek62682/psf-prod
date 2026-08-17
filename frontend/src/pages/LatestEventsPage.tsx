@@ -5,9 +5,9 @@ import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import useSWR from "swr";
 import { Reveal } from "@/components/Reveal";
 import { useActiveSection } from "@/hooks/useActiveSection";
-import { useFetch } from "@/hooks/useFetch";
 import { Icon } from "@iconify/react";
 import { listEvents } from "@/config/api/event.api";
 import { getAssetUrl } from "@/Utils/constant";
@@ -124,7 +124,7 @@ function EventImageSliderInner({ list, alt }: { list: string[]; alt: string }) {
 }
 
 export function LatestEventsPage() {
-  const { data: events, isLoading: eventsLoading, error: eventsError } = useFetch(listEvents, []);
+  const { data: events, isLoading: eventsLoading, error: eventsError } = useSWR("events", listEvents);
   const eventList = events ?? [];
 
   // Unique categories in the order they first appear, used for the filter nav.
@@ -245,6 +245,24 @@ export function LatestEventsPage() {
                               <p className="text-xs text-[#111111]/35 mt-0.5">{a.description}</p>
                             </div>
                           </div>
+                        ))}
+                      </Reveal>
+                    )}
+                    {e.documents && e.documents.length > 0 && (
+                      <Reveal className="reveal-delay-3 mt-8 space-y-2">
+                        <p className="label-text text-[#111111]/25 mb-4">DOCUMENTS</p>
+                        {e.documents.map((doc) => (
+                          <a
+                            key={doc.url}
+                            href={getAssetUrl(doc.url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 py-3 px-3 border border-[#111111]/[0.06] rounded-lg text-sm text-[#111111]/60 hover:text-accent hover:border-accent/30 transition-colors duration-300"
+                          >
+                            <Icon icon="lucide:file-text" className="w-4 h-4 text-accent shrink-0" />
+                            <span className="flex-1">{doc.label}</span>
+                            <span className="text-accent text-xs font-medium">View / Download →</span>
+                          </a>
                         ))}
                       </Reveal>
                     )}

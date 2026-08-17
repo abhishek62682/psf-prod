@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
+import useSWR from "swr";
 import { Reveal } from "@/components/Reveal";
 // import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ProgressBar } from "@/components/ProgressBar";
 import { DonorTicker } from "@/components/DonorTicker";
 import { FaqAccordion } from "@/components/FaqAccordion";
-import { useFetch } from "@/hooks/useFetch";
 import { homeFaqItems } from "@/data/homeData";
 import type { RecentDonor } from "@/data/homeData";
 import { getRecentDonations } from "@/config/api/donation.api";
@@ -28,10 +28,10 @@ const toRecentDonor = (d: PublicDonation): RecentDonor => ({
 });
 
 export function HomePage() {
-  const { data: recentDonations } = useFetch(() => getRecentDonations(20), []);
+  const { data: recentDonations } = useSWR("recent-donations", () => getRecentDonations(20));
   const recentDonors = (recentDonations ?? []).map(toRecentDonor);
 
-  const { data: campaignsData } = useFetch(() => listCampaigns({ limit: 3 }), []);
+  const { data: campaignsData } = useSWR("campaigns-limit-3", () => listCampaigns({ limit: 3 }));
   const heroCampaigns = campaignsData?.campaigns ?? [];
 
   const row1 = recentDonors.slice(0, 10);

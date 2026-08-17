@@ -78,6 +78,7 @@ const EditEventPage = () => {
               eventEndDate: event?.eventEndDate ? event.eventEndDate.slice(0, 10) : "",
             }}
             initialImages={event?.images}
+            initialDocuments={event?.documents}
             initialStats={event?.stats}
             initialActivities={event?.activities}
             onSubmit={(payload) => mutation.mutate(payload)}

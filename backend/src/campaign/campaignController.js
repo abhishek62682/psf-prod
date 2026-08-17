@@ -40,6 +40,7 @@ const createCampaign = async (req, res, next) => {
       goalAmount,
       coverImage,
       gallery,
+      documents,
       startDate,
       endDate,
       isFeatured,
@@ -76,6 +77,7 @@ const createCampaign = async (req, res, next) => {
       goalAmount,
       coverImage,
       gallery,
+      documents,
       startDate,
       endDate,
       isFeatured,
@@ -267,6 +269,7 @@ const updateCampaign = async (req, res, next) => {
       "goalAmount",
       "coverImage",
       "gallery",
+      "documents",
       "startDate",
       "endDate",
       "isFeatured",
@@ -283,7 +286,7 @@ const updateCampaign = async (req, res, next) => {
 
     const existing = await campaignModel
       .findOne({ _id: req.params.id, isDeleted: false })
-      .select("coverImage gallery")
+      .select("coverImage gallery documents")
       .lean();
     if (!existing) {
       return next(createHttpError(404, "Campaign not found."));
@@ -308,6 +311,13 @@ const updateCampaign = async (req, res, next) => {
     if (updates.gallery !== undefined) {
       const removed = (existing.gallery || []).filter((url) => !updates.gallery.includes(url));
       removed.forEach(deleteUploadedFile);
+    }
+
+    // Documents replaced with a new list — clean up whatever dropped out.
+    if (updates.documents !== undefined) {
+      const newUrls = updates.documents.map((d) => d.url);
+      const removed = (existing.documents || []).filter((d) => !newUrls.includes(d.url));
+      removed.forEach((d) => deleteUploadedFile(d.url));
     }
 
     return res.json({
@@ -339,6 +349,7 @@ const deleteCampaign = async (req, res, next) => {
 
       if (campaign.coverImage) deleteUploadedFile(campaign.coverImage);
       (campaign.gallery || []).forEach(deleteUploadedFile);
+      (campaign.documents || []).forEach((d) => deleteUploadedFile(d.url));
 
       return res.json({
         success: true,

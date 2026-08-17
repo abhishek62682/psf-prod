@@ -82,9 +82,9 @@ app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     let message = err.message;
     if (err.code === "LIMIT_FILE_SIZE") {
-      message = "Image must be smaller than 5 MB.";
+      message = "File is too large.";
     } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
-      message = "Too many files or wrong field name. Max 10 images per request.";
+      message = "Too many files or wrong field name.";
     }
     return next(createHttpError(400, message));
   }

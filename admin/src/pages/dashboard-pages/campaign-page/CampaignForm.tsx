@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
-import { LoaderCircle, ImagePlus, X } from "lucide-react";
+import { LoaderCircle, ImagePlus, X, FileText, FilePlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,8 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { uploadImage, uploadImages } from "@/config/api/upload.api";
-import type { CampaignFormPayload, Campaign } from "@/config/api/campaign.api";
+import { uploadImage, uploadImages, uploadDocuments } from "@/config/api/upload.api";
+import type { CampaignFormPayload, Campaign, CampaignDocument } from "@/config/api/campaign.api";
 import {
   CAMPAIGN_STATUSES,
   CAMPAIGN_STATUS_LABELS,
@@ -59,11 +59,14 @@ const campaignSchema = z
 
 export type CampaignFormValues = z.infer<typeof campaignSchema>;
 
+const CAMPAIGN_MAX_DOCUMENTS = 6;
+
 interface CampaignFormProps {
   mode: "create" | "edit";
   defaultValues?: Partial<CampaignFormValues>;
   initialCoverImage?: string;
   initialGallery?: string[];
+  initialDocuments?: CampaignDocument[];
   onSubmit: (payload: CampaignFormPayload) => void;
   isSubmitting: boolean;
   submitLabel: string;
@@ -75,14 +78,17 @@ export function CampaignForm({
   defaultValues,
   initialCoverImage,
   initialGallery,
+  initialDocuments,
   onSubmit,
   isSubmitting,
   submitLabel,
 }: CampaignFormProps) {
   const [coverImage, setCoverImage] = useState<string>(initialCoverImage ?? "");
   const [gallery, setGallery] = useState<string[]>(initialGallery ?? []);
+  const [documents, setDocuments] = useState<CampaignDocument[]>(initialDocuments ?? []);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const documentsInputRef = useRef<HTMLInputElement | null>(null);
 
   const form = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignSchema),
@@ -141,16 +147,60 @@ export function CampaignForm({
     setGallery((prev) => prev.filter((g) => g !== url));
   };
 
+  const defaultDocumentLabel = (fileName: string) =>
+    fileName.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ").trim() || fileName;
+
+  const documentsMutation = useMutation({
+    mutationFn: (files: File[]) => uploadDocuments(files, "campaign"),
+    onSuccess: (data, files) => {
+      const uploaded = data.urls.map((url, i) => ({
+        url,
+        label: defaultDocumentLabel(files[i]?.name ?? url.split("/").pop() ?? url),
+      }));
+      setDocuments((prev) => [...prev, ...uploaded].slice(0, CAMPAIGN_MAX_DOCUMENTS));
+      toast.success(`${data.count} document(s) uploaded`);
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error("Document upload failed", {
+        description: error.response?.data?.message ?? "Something went wrong.",
+      });
+    },
+  });
+
+  const handleDocumentsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    const remaining = CAMPAIGN_MAX_DOCUMENTS - documents.length;
+    if (files.length > remaining) {
+      toast.error(`You can add at most ${CAMPAIGN_MAX_DOCUMENTS} PDFs total.`);
+    }
+    const toUpload = files.slice(0, remaining);
+    if (toUpload.length > 0) documentsMutation.mutate(toUpload);
+    if (documentsInputRef.current) documentsInputRef.current.value = "";
+  };
+
+  const removeDocument = (url: string) => {
+    setDocuments((prev) => prev.filter((d) => d.url !== url));
+  };
+
+  const updateDocumentLabel = (url: string, label: string) => {
+    setDocuments((prev) => prev.map((d) => (d.url === url ? { ...d, label } : d)));
+  };
+
   const handleFormSubmit = (values: CampaignFormValues) => {
+    const cleanDocuments = documents.map((d) => ({
+      url: d.url,
+      label: d.label.trim() || defaultDocumentLabel(d.url.split("/").pop() ?? d.url),
+    }));
     onSubmit({
       ...values,
       slug: values.slug || undefined,
       coverImage,
       gallery,
+      documents: cleanDocuments,
     });
   };
 
-  const uploading = coverMutation.isPending || galleryMutation.isPending;
+  const uploading = coverMutation.isPending || galleryMutation.isPending || documentsMutation.isPending;
 
   return (
     <Form {...form}>
@@ -299,6 +349,70 @@ export function CampaignForm({
                 />
               </div>
               <span className="text-xs text-muted-foreground">Up to 10 images per request</span>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium mb-2">
+                Documents{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional, up to {CAMPAIGN_MAX_DOCUMENTS} PDFs)
+                </span>
+              </p>
+              <div className="space-y-2">
+                {documents?.map((doc) => (
+                  <div
+                    key={doc.url}
+                    className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+                  >
+                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <Input
+                      value={doc.label}
+                      onChange={(e) => updateDocumentLabel(doc.url, e.target.value)}
+                      placeholder="Document label"
+                      className="h-8 flex-1"
+                    />
+                    <a
+                      href={getAssetUrl(doc.url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 text-xs text-blue-600 hover:underline"
+                    >
+                      View
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => removeDocument(doc.url)}
+                      className="shrink-0 rounded-full bg-red-50 text-red-600 p-1 hover:bg-red-100"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+                {documents.length < CAMPAIGN_MAX_DOCUMENTS && (
+                  <button
+                    type="button"
+                    disabled={documentsMutation.isPending}
+                    onClick={() => documentsInputRef.current?.click()}
+                    className="flex items-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground hover:border-slate-400"
+                  >
+                    {documentsMutation.isPending ? (
+                      <LoaderCircle className="animate-spin h-4 w-4" />
+                    ) : (
+                      <FilePlus className="h-4 w-4" />
+                    )}
+                    Add PDF
+                  </button>
+                )}
+                <input
+                  ref={documentsInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  multiple
+                  className="hidden"
+                  onChange={handleDocumentsChange}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">PDF only · Max 10MB each</p>
             </div>
           </div>
         </div>

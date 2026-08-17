@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
+import useSWR from "swr";
 import { Reveal } from "@/components/Reveal";
 import { ProgressBar } from "@/components/ProgressBar";
-import { useFetch } from "@/hooks/useFetch";
 import { listCampaigns } from "@/config/api/campaign.api";
 import { getAssetUrl } from "@/Utils/constant";
 
 const formatAmount = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
 export function CampaignsPage() {
-  const { data, isLoading, error } = useFetch(() => listCampaigns({ limit: 50 }), []);
+  const { data, isLoading, error } = useSWR("campaigns-limit-50", () => listCampaigns({ limit: 50 }));
   const campaigns = data?.campaigns ?? [];
 
   return (

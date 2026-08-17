@@ -12,6 +12,10 @@ import httpClient from "@/config/http/httpClient";
 
 export type UploadType = "thumbnail" | "gallery" | "event";
 
+// Document (PDF) uploads — separate whitelist from UploadType above,
+// matches ALLOWED_DOCUMENT_TYPES in backend/src/middlewares/upload.js.
+export type DocumentUploadType = "event" | "campaign";
+
 interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -39,6 +43,21 @@ export const uploadImages = async (
 
   const { data } = await httpClient.post<ApiResponse<{ urls: string[]; type: string; count: number }>>(
     `uploads/images?type=${type}`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return data.data;
+};
+
+export const uploadDocuments = async (
+  files: File[],
+  type: DocumentUploadType
+): Promise<{ urls: string[]; type: string; count: number }> => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("documents", file));
+
+  const { data } = await httpClient.post<ApiResponse<{ urls: string[]; type: string; count: number }>>(
+    `uploads/documents?type=${type}`,
     formData,
     { headers: { "Content-Type": "multipart/form-data" } }
   );

@@ -2,8 +2,8 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "@iconify/react";
+import useSWR from "swr";
 import { Reveal } from "@/components/Reveal";
-import { useFetch } from "@/hooks/useFetch";
 import { getCampaignOptions } from "@/config/api/campaign.api";
 import { submitDonation } from "@/config/api/donation.api";
 import { getPaymentReceivingAccount } from "@/config/api/paymentReceiving.api";
@@ -60,8 +60,8 @@ export function DonatePage() {
   const [searchParams] = useSearchParams();
   const preselectedCampaignId = searchParams.get("campaignId") ?? "";
 
-  const { data: campaignOptions } = useFetch(getCampaignOptions, []);
-  const { data: paymentAccount } = useFetch(getPaymentReceivingAccount, []);
+  const { data: campaignOptions } = useSWR("campaign-options", getCampaignOptions);
+  const { data: paymentAccount } = useSWR("payment-account", getPaymentReceivingAccount);
 
   const [publicPermission, setPublicPermission] = useState(false);
   const [payment, setPayment] = useState<PaymentMethod>("");

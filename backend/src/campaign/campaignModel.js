@@ -1,6 +1,15 @@
 import mongoose from "mongoose";
 import { CAMPAIGN_STATUSES } from "./campaignConstants.js";
 
+const campaignDocumentSchema = new mongoose.Schema(
+  {
+    url: { type: String, required: true },
+    // Admin-provided label shown in place of the raw filename, e.g. "Annual Report 2026".
+    label: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const campaignSchema = new mongoose.Schema(
   {
     title: {
@@ -46,6 +55,11 @@ const campaignSchema = new mongoose.Schema(
     },
     gallery: {
       type: [String],
+      default: [],
+    },
+    // Optional, up to 6 PDFs with admin-written labels, enforced in campaignValidation.js.
+    documents: {
+      type: [campaignDocumentSchema],
       default: [],
     },
     startDate: {
