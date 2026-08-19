@@ -11,6 +11,7 @@ import { LoaderCircle, ImagePlus, X, Plus, FileText, FilePlus } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import Editor from "@/components/Editor";
 import {
   Form,
   FormControl,
@@ -32,7 +33,12 @@ const eventSchema = z
   .object({
     title: z.string().trim().min(1, { message: "Title is required." }),
     category: z.string().trim().min(1, { message: "Category is required." }),
-    description: z.string().trim().min(1, { message: "Description is required." }),
+    description: z
+      .string()
+      .trim()
+      .refine((val) => val.replace(/<[^>]*>/g, "").trim().length > 0, {
+        message: "Description is required.",
+      }),
     eventStartDate: z.string().optional(),
     eventEndDate: z.string().optional(),
   })
@@ -248,7 +254,11 @@ export function EventForm({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea rows={5} placeholder="What happened at this event" {...field} />
+                    <Editor
+                      content={field.value}
+                      setContent={field.onChange}
+                      placeholder="What happened at this event? Add links with the Link button."
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

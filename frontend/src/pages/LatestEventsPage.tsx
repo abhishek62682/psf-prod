@@ -6,7 +6,17 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import useSWR from "swr";
+import DOMPurify from "dompurify";
 import { Reveal } from "@/components/Reveal";
+
+// Force every link in admin-authored event descriptions to open safely in a
+// new tab, regardless of what attributes were present in the stored HTML.
+DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+  if (node.tagName === "A") {
+    node.setAttribute("target", "_blank");
+    node.setAttribute("rel", "noopener noreferrer nofollow");
+  }
+});
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { Icon } from "@iconify/react";
 import { listEvents } from "@/config/api/event.api";
@@ -229,9 +239,11 @@ export function LatestEventsPage() {
                         <p className="text-sm text-[#111111]/40">{dateLine}</p>
                       </Reveal>
                     )}
-                    <Reveal as="p" className="reveal-delay-2 text-base text-[#111111]/50 leading-relaxed mb-10">
-                      {e.description}
-                    </Reveal>
+                    <Reveal
+                      as="div"
+                      className="reveal-delay-2 prose prose-sm max-w-none text-base text-[#111111]/50 leading-relaxed mb-10 prose-a:text-accent prose-a:no-underline hover:prose-a:underline"
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(e.description) }}
+                    />
                     {e.activities && e.activities.length > 0 && (
                       <Reveal className="reveal-delay-3 space-y-0">
                         <p className="label-text text-[#111111]/25 mb-4">KEY ACTIVITIES</p>
