@@ -238,7 +238,7 @@ export function DonatePage() {
                 <p className="text-xs text-[#111111]/35 mb-6 leading-relaxed">Send money directly to our UPI ID</p>
                 <div className="bg-warm-alt rounded-lg p-5">
                   <p className="text-xs text-[#111111]/30 mb-2">UPI ID</p>
-                  <p className="text-lg font-mono font-medium text-[#111111] mb-3">{paymentAccount?.upiId ?? "—"}</p>
+                  <p className="text-lg font-mono font-medium text-[#111111] mb-3 break-all">{paymentAccount?.upiId ?? "—"}</p>
                   <button
                     onClick={copyUpi}
                     disabled={!paymentAccount?.upiId}
