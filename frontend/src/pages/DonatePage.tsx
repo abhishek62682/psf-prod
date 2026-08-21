@@ -68,7 +68,7 @@ export function DonatePage() {
   const [qrFile, setQrFile] = useState<File | null>(null);
   const [upiFile, setUpiFile] = useState<File | null>(null);
   const [bankFile, setBankFile] = useState<File | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -85,11 +85,11 @@ export function DonatePage() {
   const [is80GApplicable, setIs80GApplicable] = useState(false);
   const [panNumber, setPanNumber] = useState("");
 
-  const copyUpi = () => {
-    if (!paymentAccount?.upiId) return;
-    navigator.clipboard?.writeText(paymentAccount.upiId).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+  const copyText = (text: string | undefined, field: string) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(text).catch(() => {});
+    setCopiedField(field);
+    setTimeout(() => setCopiedField((current) => (current === field ? null : current)), 1500);
   };
 
   const upiPayLink = paymentAccount?.upiId
@@ -211,75 +211,99 @@ export function DonatePage() {
               </Reveal>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Reveal className="bg-warm border border-[#111111]/[0.07] rounded-2xl p-8 text-center">
-                <div className="w-12 h-12 rounded-full border border-accent/25 flex items-center justify-center mx-auto mb-6">
-                  <Icon icon="lucide:qr-code" className="w-5 h-5 text-accent" />
-                </div>
-                <h3 className="font-serif text-xl text-[#111111] mb-2">Scan QR Code</h3>
-                <p className="text-xs text-[#111111]/35 mb-6 leading-relaxed">Use any UPI app to scan and pay</p>
-                {paymentAccount?.qrCode ? (
-                  <img
-                    src={getAssetUrl(paymentAccount.qrCode)}
-                    alt="Donation QR code"
-                    className="w-48 h-48 mx-auto rounded-xl mb-4 object-contain border border-[#111111]/[0.08]"
-                  />
-                ) : (
-                  <div className="qr-placeholder w-48 h-48 mx-auto rounded-xl mb-4 flex items-center justify-center border-2 border-dashed border-[#111111]/[0.1]">
-                    <div className="text-center">
-                      <Icon icon="lucide:qr-code" className="w-10 h-10 text-[#111111]/12 mx-auto block mb-2" />
-                      <p className="text-[10px] text-[#111111]/20">QR code not available yet</p>
-                    </div>
-                  </div>
-                )}
-              </Reveal>
-
-              <Reveal className="reveal-delay-1 bg-warm border border-[#111111]/[0.07] rounded-2xl p-8 text-center">
                 <div className="w-12 h-12 rounded-full border border-accent/25 flex items-center justify-center mx-auto mb-6">
                   <Icon icon="lucide:smartphone" className="w-5 h-5 text-accent" />
                 </div>
-                <h3 className="font-serif text-xl text-[#111111] mb-2">Pay via UPI</h3>
-                <p className="text-xs text-[#111111]/35 mb-6 leading-relaxed">Send money directly to our UPI ID</p>
+                <h3 className="font-serif text-xl text-[#111111] mb-2">UPI Payment</h3>
+                <p className="text-xs text-[#111111]/35 mb-6 leading-relaxed">Pay instantly using any UPI app</p>
+
                 <div className="bg-warm-alt rounded-lg p-5">
-                  <p className="hidden md:block text-xs text-[#111111]/30 mb-2">UPI ID</p>
-                  <p className="hidden md:block text-lg font-mono font-medium text-[#111111] mb-3 break-all">{paymentAccount?.upiId ?? "—"}</p>
-                  <button
-                    onClick={copyUpi}
-                    disabled={!paymentAccount?.upiId}
-                    className={`hidden md:inline-flex copy-btn px-4 py-2 border border-[#111111]/[0.08] rounded-sm text-xs text-[#111111]/50 items-center gap-2 disabled:opacity-50 ${copied ? "copied" : ""}`}
-                  >
-                    <Icon icon="lucide:copy" className="w-3.5 h-3.5" />
-                    <span>{copied ? "Copied!" : "Copy UPI ID"}</span>
-                  </button>
-                  <a
-                    href={upiPayLink}
-                    aria-disabled={!paymentAccount?.upiId}
-                    className={`md:hidden btn-press bg-accent text-white text-sm font-medium px-6 py-3 rounded-sm inline-flex items-center justify-center gap-2 w-full transition-all duration-400 ${paymentAccount?.upiId ? "hover:bg-[#d93a56]" : "opacity-50 pointer-events-none"}`}
-                  >
-                    <Icon icon="lucide:smartphone" className="w-4 h-4" />
-                    <span>Pay via UPI App</span>
-                    <span>→</span>
-                  </a>
+                  <p className="text-xs text-[#111111]/30 mb-2">UPI ID</p>
+                  <div className="flex items-center gap-2 mb-5">
+                    <p className="flex-1 text-left text-sm sm:text-base font-mono font-medium text-[#111111] break-all">
+                      {paymentAccount?.upiId ?? "—"}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => copyText(paymentAccount?.upiId, "upi")}
+                      disabled={!paymentAccount?.upiId}
+                      title="Copy UPI ID"
+                      className={`copy-btn w-9 h-9 shrink-0 rounded-sm border border-[#111111]/[0.08] flex items-center justify-center text-[#111111]/50 disabled:opacity-50 ${copiedField === "upi" ? "copied" : ""}`}
+                    >
+                      <Icon icon={copiedField === "upi" ? "lucide:check" : "lucide:copy"} className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="flex-1 h-px bg-[#111111]/[0.08]" />
+                    <span className="text-[10px] tracking-widest text-[#111111]/30">OR SCAN QR</span>
+                    <div className="flex-1 h-px bg-[#111111]/[0.08]" />
+                  </div>
+
+                  {paymentAccount?.qrCode ? (
+                    <img
+                      src={getAssetUrl(paymentAccount.qrCode)}
+                      alt="Donation QR code"
+                      className="w-44 h-44 mx-auto rounded-xl object-contain border border-[#111111]/[0.08] bg-white"
+                    />
+                  ) : (
+                    <div className="qr-placeholder w-44 h-44 mx-auto rounded-xl flex items-center justify-center border-2 border-dashed border-[#111111]/[0.1]">
+                      <div className="text-center">
+                        <Icon icon="lucide:qr-code" className="w-10 h-10 text-[#111111]/12 mx-auto block mb-2" />
+                        <p className="text-[10px] text-[#111111]/20">QR code not available yet</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-[#111111]/30 mt-4">Scan with any UPI app to donate instantly</p>
                 </div>
+
+                <a
+                  href={upiPayLink}
+                  aria-disabled={!paymentAccount?.upiId}
+                  className={`md:hidden mt-5 btn-press bg-accent text-white text-sm font-medium px-6 py-3 rounded-sm inline-flex items-center justify-center gap-2 w-full transition-all duration-400 ${paymentAccount?.upiId ? "hover:bg-[#d93a56]" : "opacity-50 pointer-events-none"}`}
+                >
+                  <Icon icon="lucide:smartphone" className="w-4 h-4" />
+                  <span>Pay via UPI App</span>
+                  <span>→</span>
+                </a>
               </Reveal>
 
-              <Reveal className="reveal-delay-2 bg-warm border border-[#111111]/[0.07] rounded-2xl p-8 text-center">
+              <Reveal className="reveal-delay-1 bg-warm border border-[#111111]/[0.07] rounded-2xl p-8 text-center">
                 <div className="w-12 h-12 rounded-full border border-accent/25 flex items-center justify-center mx-auto mb-6">
                   <Icon icon="lucide:landmark" className="w-5 h-5 text-accent" />
                 </div>
                 <h3 className="font-serif text-xl text-[#111111] mb-2">Bank Transfer</h3>
                 <p className="text-xs text-[#111111]/35 mb-6 leading-relaxed">Transfer directly to our bank account</p>
                 <div className="bg-warm-alt rounded-lg p-5 text-left">
-                  {[
-                    ["ACCOUNT NAME", paymentAccount?.accountName ?? "—"],
-                    ["BANK NAME", paymentAccount?.bankName ?? "—"],
-                    ["ACCOUNT NO.", paymentAccount?.accountNumber ?? "—"],
-                    ["IFSC CODE", paymentAccount?.ifscCode ?? "—"],
-                    ["BRANCH", paymentAccount?.branch ?? "—"],
-                  ].map(([label, value], i) => (
-                    <div key={label} className={`bank-detail-row rounded px-3 py-2.5 ${i < 4 ? "mb-1" : ""}`}>
-                      <p className="text-[10px] text-[#111111]/30">{label}</p>
-                      <p className="text-xs font-medium text-[#111111]">{value}</p>
+                  {(
+                    [
+                      ["ACCOUNT NAME", paymentAccount?.accountName],
+                      ["BANK NAME", paymentAccount?.bankName],
+                      ["ACCOUNT NO.", paymentAccount?.accountNumber],
+                      ["IFSC CODE", paymentAccount?.ifscCode],
+                      ["BRANCH", paymentAccount?.branch],
+                    ] as const
+                  ).map(([label, value], i, arr) => (
+                    <div
+                      key={label}
+                      className={`bank-detail-row rounded px-3 py-2.5 flex items-center justify-between gap-3 ${i < arr.length - 1 ? "mb-1" : ""}`}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-[#111111]/30">{label}</p>
+                        <p className="text-xs font-medium text-[#111111] break-all">{value ?? "—"}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyText(value, label)}
+                        disabled={!value}
+                        title={`Copy ${label.toLowerCase()}`}
+                        className={`copy-btn w-7 h-7 shrink-0 rounded-sm border border-[#111111]/[0.08] flex items-center justify-center text-[#111111]/40 disabled:opacity-30 ${copiedField === label ? "copied" : ""}`}
+                      >
+                        <Icon icon={copiedField === label ? "lucide:check" : "lucide:copy"} className="w-3 h-3" />
+                      </button>
                     </div>
                   ))}
                 </div>
