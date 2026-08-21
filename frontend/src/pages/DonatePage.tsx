@@ -92,6 +92,10 @@ export function DonatePage() {
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const upiPayLink = paymentAccount?.upiId
+    ? `upi://pay?pa=${encodeURIComponent(paymentAccount.upiId)}&pn=${encodeURIComponent("Proyakh Social Foundation")}`
+    : undefined;
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitError(null);
@@ -237,16 +241,25 @@ export function DonatePage() {
                 <h3 className="font-serif text-xl text-[#111111] mb-2">Pay via UPI</h3>
                 <p className="text-xs text-[#111111]/35 mb-6 leading-relaxed">Send money directly to our UPI ID</p>
                 <div className="bg-warm-alt rounded-lg p-5">
-                  <p className="text-xs text-[#111111]/30 mb-2">UPI ID</p>
-                  <p className="text-lg font-mono font-medium text-[#111111] mb-3 break-all">{paymentAccount?.upiId ?? "—"}</p>
+                  <p className="hidden md:block text-xs text-[#111111]/30 mb-2">UPI ID</p>
+                  <p className="hidden md:block text-lg font-mono font-medium text-[#111111] mb-3 break-all">{paymentAccount?.upiId ?? "—"}</p>
                   <button
                     onClick={copyUpi}
                     disabled={!paymentAccount?.upiId}
-                    className={`copy-btn px-4 py-2 border border-[#111111]/[0.08] rounded-sm text-xs text-[#111111]/50 inline-flex items-center gap-2 disabled:opacity-50 ${copied ? "copied" : ""}`}
+                    className={`hidden md:inline-flex copy-btn px-4 py-2 border border-[#111111]/[0.08] rounded-sm text-xs text-[#111111]/50 items-center gap-2 disabled:opacity-50 ${copied ? "copied" : ""}`}
                   >
                     <Icon icon="lucide:copy" className="w-3.5 h-3.5" />
                     <span>{copied ? "Copied!" : "Copy UPI ID"}</span>
                   </button>
+                  <a
+                    href={upiPayLink}
+                    aria-disabled={!paymentAccount?.upiId}
+                    className={`md:hidden btn-press bg-accent text-white text-sm font-medium px-6 py-3 rounded-sm inline-flex items-center justify-center gap-2 w-full transition-all duration-400 ${paymentAccount?.upiId ? "hover:bg-[#d93a56]" : "opacity-50 pointer-events-none"}`}
+                  >
+                    <Icon icon="lucide:smartphone" className="w-4 h-4" />
+                    <span>Pay via UPI App</span>
+                    <span>→</span>
+                  </a>
                 </div>
               </Reveal>
 
